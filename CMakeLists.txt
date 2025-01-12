@@ -28,6 +28,8 @@ add_executable(ESC src/main.cpp
 					src/backend/vulkanInitialize.hpp
 					src/backend/vulkanDebug.cpp
 					src/backend/vulkanDebug.hpp
+					src/backend/vulkanSwapChain.cpp
+					src/backend/vulkanSwapChain.hpp
 					src/backend/vulkanUtilities.cpp
 					src/backend/vulkanUtilities.hpp
 					src/backend/glfwInitialize.cpp

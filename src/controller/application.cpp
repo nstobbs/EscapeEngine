@@ -18,6 +18,7 @@ void Application::startUp()
     createVulkanInstance(m_vulkanContext);
     setupDebugMessenger(m_vulkanContext);
     createSurface(m_vulkanContext, m_window);
+    pickPhysicalDevice(m_vulkanContext);
 };
 
 void Application::loop()

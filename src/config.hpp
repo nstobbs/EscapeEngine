@@ -11,8 +11,10 @@ config.cpp*/
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <set>
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <optional>
 
 #endif
