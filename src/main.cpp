@@ -24,9 +24,15 @@ int main()
     SceneObject.setEntityTransformComponent(CardEntity, CardTransformComponent);
 
     ShaderComponent CardShaderComponent;
-    CardShaderComponent.fragmentSourcePath = "../../src/shaders/DefaultShader.frag";
-    CardShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShader.vert";
+    CardShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
+    CardShaderComponent.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
     SceneObject.setEntityShaderComponent(CardEntity, CardShaderComponent);
+
+    Entity BoxEntity = SceneObject.makeEntity();
+    ShaderComponent BoxShaderComponent;
+    BoxShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
+    BoxShaderComponent.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
+    SceneObject.setEntityShaderComponent(BoxEntity, BoxShaderComponent);
 
     /* Create Camera */
     CameraComponent Camera;

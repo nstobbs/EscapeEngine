@@ -45,8 +45,9 @@ struct vulkanContext
     VkImageView depthImageView;
 
     /* Pipeline Related */
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipline;
+    VkPipelineLayout pipelineLayout; /* Seems like we only needs one piplineLayout for now ??*/
+    uint32_t shaderCount;
+    std::vector<VkPipeline> graphicsPiplines;
 
     /* Sync Object Related*/
     std::vector<VkSemaphore> imageAvailableSemaphores;

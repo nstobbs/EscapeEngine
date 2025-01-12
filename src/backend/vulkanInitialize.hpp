@@ -6,6 +6,7 @@
 #include "vulkanDebug.hpp"
 #include "vulkanUtilities.hpp"
 #include "vulkanSwapChain.hpp"
+#include "vulkanShader.hpp"
 
 struct QueueFamilyIndices
 {
@@ -36,5 +37,8 @@ void createRenderPass(vulkanContext& context);
 VkFormat findDepthFormat(vulkanContext& context);
 VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 void createDescriptorSetLayout(vulkanContext& context);
+void createGraphicsPipelineLayout(vulkanContext& context);
+void createGraphicsPipeline(vulkanContext& context, std::string& fragmentPath, std::string& vertexPath);
+void createCommandPool(vulkanContext& context);
 
 #endif

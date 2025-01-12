@@ -10,5 +10,7 @@ struct UniformBufferObject {
 };
 
 void checkVulkanResult(VkResult result);
+VkVertexInputBindingDescription getBindingDescription();
+std::array<VkVertexInputAttributeDescription, 1> getAttributeDescriptions();
 
 #endif

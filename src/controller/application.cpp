@@ -24,6 +24,18 @@ void Application::startUp()
     createImageViews(m_vulkanContext);
     createRenderPass(m_vulkanContext);
     createDescriptorSetLayout(m_vulkanContext);
+
+    /* All ShaderComponents should be setup
+    before creating the GraphicsPiplines */
+    createGraphicsPipelineLayout(m_vulkanContext); /* Might Need to add this to the loop if shaders need different UniformBuffers */
+    m_vulkanContext.shaderCount = 0;
+    for (auto& [entityID, shader] : m_Scene->m_ShaderComponents)
+    {
+        m_vulkanContext.shaderCount++;
+        shader.ID = m_vulkanContext.shaderCount;
+        createGraphicsPipeline(m_vulkanContext, shader.fragmentSourcePath, shader.vertexSourcePath);
+    };
+    
 };
 
 void Application::loop()

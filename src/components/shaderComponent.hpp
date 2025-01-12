@@ -5,8 +5,11 @@
 
 struct ShaderComponent
 {
+    /* Should be Set Before 
+    Create the Graphics Pipeline*/
     std::string vertexSourcePath;
     std::string fragmentSourcePath;
+    uint32_t ID;
 };
 
 #endif

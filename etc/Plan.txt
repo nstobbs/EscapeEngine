@@ -2,7 +2,7 @@ Entity Component System
 
 Entity {ID} - MeshObject, GridObject, BoidObject, CameraObject, Anything
 Component {Data} - Transforms, MeshData{Vertices, Indices}, Physics, Shaders, Camera
-Systems {Processing} - RenderSystem(MeshData + Transforms & CameraInfo), PhysicsSystem(Transforms + Physics), InputSystem(Window Inputs + Transforms)
+Systems {Processing} - RenderSystem(MeshData + Shaders + Transforms & CameraInfo), PhysicsSystem(Transforms + Physics), InputSystem(Window Inputs + Transforms)
 
 
 Programs Design
