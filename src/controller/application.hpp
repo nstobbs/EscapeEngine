@@ -6,6 +6,7 @@
 #include "../backend/vulkanContext.hpp"
 #include "../backend/glfwInitialize.hpp"
 #include "../backend/vulkanInitialize.hpp"
+#include "../backend/vulkanDebug.hpp"
 
 #include "scene.hpp"
 

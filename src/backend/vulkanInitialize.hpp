@@ -6,13 +6,8 @@
 #include "vulkanDebug.hpp"
 #include "vulkanUtilities.hpp"
 
-VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData);
-
 void createVulkanInstance(vulkanContext& context);
 std::vector<const char*> getRequiredExtensions();
+void createSurface(vulkanContext& context, GLFWwindow* window);
 
 #endif

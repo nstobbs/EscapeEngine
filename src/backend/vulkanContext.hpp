@@ -19,6 +19,9 @@ struct vulkanContext
     /* Debug */
     VkDebugUtilsMessengerEXT debugMessenger;
 
+    /* Surface Related*/
+    VkSurfaceKHR surface;
+
     /* Commands Related */
     VkQueue graphicQueue;
     VkQueue presentQueue;

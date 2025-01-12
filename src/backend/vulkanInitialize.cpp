@@ -1,16 +1,5 @@
 #include "vulkanInitialize.hpp"
 
-/* Debug Callback Validation Layers */
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData)
-{
-    std::cerr << "{WARN} validation layer: " << pCallbackData->pMessage << '\n';
-
-        return VK_FALSE;
-};
 /* Creates a Vulkan Instance for a VulkanContext */
 void createVulkanInstance(vulkanContext& context)
 {
@@ -45,14 +34,7 @@ void createVulkanInstance(vulkanContext& context)
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
-        debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        debugCreateInfo.pfnUserCallback = debugCallback;
+        populateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
     } else {
         createInfo.enabledExtensionCount = 0;
@@ -80,4 +62,13 @@ std::vector<const char*> getRequiredExtensions()
     }
 
     return extensions;
-}
+};
+
+/* Creates a Vulkan Surface for a VulkanContext */
+void createSurface(vulkanContext& context, GLFWwindow* window)
+{
+    if (glfwCreateWindowSurface(context.instance, window, nullptr, &context.surface) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE SURFACE.");
+    };
+};
