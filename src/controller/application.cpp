@@ -21,6 +21,7 @@ void Application::startUp()
     pickPhysicalDevice(m_vulkanContext);
     createLogicalDevice(m_vulkanContext);
     createSwapChain(m_vulkanContext, m_window);
+    createImageViews(m_vulkanContext);
 };
 
 void Application::loop()
