@@ -1,0 +1,60 @@
+Entity Component System
+
+Entity {ID} - MeshObject, GridObject, BoidObject, CameraObject, Anything
+Component {Data} - Transforms, MeshData{Vertices, Indices}, Physics, Shaders, Camera
+Systems {Processing} - RenderSystem(MeshData + Transforms & CameraInfo), PhysicsSystem(Transforms + Physics), InputSystem(Window Inputs + Transforms)
+
+
+Programs Design
+
+Classes:
+    App:
+        Handles the
+        Start Up
+        MainLoop
+        Teardown.
+        Takes A Scene as a Inputs and renders it to screen.
+
+    Scene:
+        Stores all of the Entities and Component.
+        Only Stores One Active CameraComponent.
+        std::vector<Entity> Entities;
+        CameraComponent ActiveCamera;
+        unordered_map<TransformsComponent> TransformsComponents;
+        unordered_map<MeshComponent> MeshComponents;
+        unordered_map<ShaderComponent> ShaderComponents;
+        unordered_map<PhysicsComponent> PhysicsComponents;
+
+
+Entities;
+uint32_t = Entity;
+
+Struct:
+    CameraComponent:
+        Stores the Camera Data of a Entity;
+        vec3 Position;
+        vec3 Up;
+        vec3 Front;
+        float FocalLength;
+
+    TransformsComponent:
+        Stores the Position Data of a Entity.
+        vec3 or mat4 Position;
+
+    MeshComponent:
+        Stores the Mesh Data of a Entity;
+        uint32_t VerticesCount;
+        std::vector<uint32_t> Vertices;
+        std::vector<uint32_t> Indices;
+
+    ShaderComponent:
+        Stores the Shader / Material Data of a Entity;
+        std::string FragmentFilepath;
+        std::string FragmentFilepath;
+
+    PhysicsComponent:
+        Stores the Data related to Physics of a Entity.
+        In Our case we will be using this Components
+        to run our Boids Simulations.
+        So storing Data that the PhysicsSystem will
+        be using later. 
