@@ -228,6 +228,7 @@ void createLogicalDevice(vulkanContext& context)
     vkGetDeviceQueue(context.device, indices.presentFamily.value(), 0, &context.presentQueue);
 };
 
+/* Creates the Vulkan SwapChains for a VulkanContext */
 void createSwapChain(vulkanContext& context, GLFWwindow* window)
 {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(context.surface, context.physicalDevice);
@@ -285,4 +286,38 @@ void createSwapChain(vulkanContext& context, GLFWwindow* window)
 
     context.swapChainImageFormat = surfaceFormat.format;
     context.swapChainExtent = extent;
+};
+
+/* Creates a VkImageView on a VulkanContext*/
+VkImageView createImageView(vulkanContext& context, uint32_t imageIndex, VkImageAspectFlags aspectFlags)
+{
+    VkImageViewCreateInfo viewInfo{};
+    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewInfo.image = context.swapChainImages[imageIndex];
+    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.format = context.swapChainImageFormat;
+    viewInfo.subresourceRange.aspectMask = aspectFlags;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
+
+    VkImageView imageView;
+    if (vkCreateImageView(context.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE IMAGE VIEW.");
+    }
+
+    return imageView;
+};
+
+/* Creates the Vulkan ImageViews for a VulkanContext */
+void createImageViews(vulkanContext& context)
+{
+    context.swapChainImageViews.resize(context.swapChainImages.size());
+
+    for (uint32_t i = 0; i < context.swapChainImages.size(); i++)
+    {
+        context.swapChainImageViews[i] = createImageView(context, i, VK_IMAGE_ASPECT_COLOR_BIT);
+    }
 };

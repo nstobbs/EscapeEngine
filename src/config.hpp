@@ -16,6 +16,7 @@ config.cpp*/
 #include <unordered_map>
 #include <string>
 #include <optional>
+#include <algorithm>
 #include <limits>
 
 #endif
