@@ -28,5 +28,7 @@ void pickPhysicalDevice(vulkanContext& context);
 bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+void createLogicalDevice(vulkanContext& context);
+void createSwapChain(vulkanContext& context, GLFWwindow* window); // Could move into vulkanSwapChain.hpp
 
 #endif

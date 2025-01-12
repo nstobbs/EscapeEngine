@@ -19,6 +19,8 @@ void Application::startUp()
     setupDebugMessenger(m_vulkanContext);
     createSurface(m_vulkanContext, m_window);
     pickPhysicalDevice(m_vulkanContext);
+    createLogicalDevice(m_vulkanContext);
+    createSwapChain(m_vulkanContext, m_window);
 };
 
 void Application::loop()
