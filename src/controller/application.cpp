@@ -22,6 +22,7 @@ void Application::startUp()
     createLogicalDevice(m_vulkanContext);
     createSwapChain(m_vulkanContext, m_window);
     createImageViews(m_vulkanContext);
+    createRenderPass(m_vulkanContext);
 };
 
 void Application::loop()

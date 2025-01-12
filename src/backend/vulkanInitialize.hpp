@@ -30,8 +30,10 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surfa
 bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 void createLogicalDevice(vulkanContext& context);
 void createSwapChain(vulkanContext& context, GLFWwindow* window); // Could move into vulkanSwapChain.hpp
-VkImageView createImageView(vulkanContext& context, uint32_t imageIndex, VkImageAspectFlags aspectFlags);
 void createImageViews(vulkanContext& context);
-void createRenderPass(vulkanContext&);
+VkImageView createImageView(vulkanContext& context, uint32_t imageIndex, VkImageAspectFlags aspectFlags);
+void createRenderPass(vulkanContext& context);
+VkFormat findDepthFormat(vulkanContext& context);
+VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 #endif
