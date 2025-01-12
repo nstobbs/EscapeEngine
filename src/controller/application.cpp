@@ -23,6 +23,7 @@ void Application::startUp()
     createSwapChain(m_vulkanContext, m_window);
     createImageViews(m_vulkanContext);
     createRenderPass(m_vulkanContext);
+    createDescriptorSetLayout(m_vulkanContext);
 };
 
 void Application::loop()

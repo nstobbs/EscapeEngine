@@ -35,5 +35,6 @@ VkImageView createImageView(vulkanContext& context, uint32_t imageIndex, VkImage
 void createRenderPass(vulkanContext& context);
 VkFormat findDepthFormat(vulkanContext& context);
 VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+void createDescriptorSetLayout(vulkanContext& context);
 
 #endif
