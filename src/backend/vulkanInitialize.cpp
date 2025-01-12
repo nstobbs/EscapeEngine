@@ -42,8 +42,8 @@ void createVulkanInstance(vulkanContext& context)
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     if (ENABLE_VALIDATION_LAYERS)
     {
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledExtensionNames = validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
 
         debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -59,7 +59,10 @@ void createVulkanInstance(vulkanContext& context)
     }
 
     /*Create Vulkan Instance*/
-    checkVulkanResult(vkCreateInstance(&createInfo, nullptr, &context.instance));
+    if (vkCreateInstance(&createInfo, nullptr, &context.instance) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE VK_INSTANCE.");
+    }
 };
 
 /* Get Required Extensions for GLFW Window & Validations Layers */
@@ -70,6 +73,11 @@ std::vector<const char*> getRequiredExtensions()
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+    if (ENABLE_VALIDATION_LAYERS)
+    {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
 
     return extensions;
 }
