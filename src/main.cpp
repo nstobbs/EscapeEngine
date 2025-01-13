@@ -20,7 +20,7 @@ int main()
     SceneObject.setEntityMeshComponent(CardEntity, CardMeshComponent);
 
     TransformComponent CardTransformComponent;
-    CardTransformComponent.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    CardTransformComponent.position = glm::mat4(1.0f);
     SceneObject.setEntityTransformComponent(CardEntity, CardTransformComponent);
 
     ShaderComponent CardShaderComponent;

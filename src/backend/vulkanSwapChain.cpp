@@ -72,3 +72,40 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwi
         return actualExtent;
     }
 };
+
+void recreateSwapChain(vulkanContext& context, GLFWwindow* window)
+{
+    int width = 0, height = 0;
+    while (width == 0 || height == 0)
+    {
+        glfwGetFramebufferSize(window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(context.device);
+    
+    cleanupSwapChain(context);
+    createSwapChain(context, window);
+    createImageViews(context);
+    createDepthResources(context);
+    createFramebuffers(context);
+};
+
+void cleanupSwapChain(vulkanContext& context)
+{
+    vkDestroyImageView(context.device, context.depthImageView, nullptr);
+    vkDestroyImage(context.device, context.depthImage, nullptr);
+    vkFreeMemory(context.device, context.depthImageMemory, nullptr);
+
+    for (size_t i = 0; i < context.swapChainFramesBuffers.size(); i++)
+    {
+        vkDestroyFramebuffer(context.device, context.swapChainFramesBuffers[i], nullptr);
+    }
+
+    for (size_t i = 0; i < context.swapChainImageViews.size(); i++)
+    {
+        vkDestroyImageView(context.device, context.swapChainImageViews[i], nullptr);
+    }
+
+    vkDestroySwapchainKHR(context.device, context.swapChain, nullptr);
+};

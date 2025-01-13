@@ -3,6 +3,7 @@
 
 #include "../config.hpp"
 #include "vulkanContext.hpp"
+#include "vulkanInitialize.hpp"
 
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -14,6 +15,8 @@ SwapChainSupportDetails querySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDe
 VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
+void recreateSwapChain(vulkanContext& context, GLFWwindow* window);
+void cleanupSwapChain(vulkanContext& context);
 
 
 #endif

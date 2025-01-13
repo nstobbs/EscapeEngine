@@ -41,6 +41,8 @@ add_executable(ESC src/main.cpp
 					src/components/meshComponent.hpp
 					src/components/shaderComponent.hpp
 					src/components/transformComponent.hpp
-					src/components/cameraComponent.hpp)
+					src/components/cameraComponent.hpp
+					src/systems/renderSystem.cpp
+					src/systems/renderSystem.hpp)
 					
 target_link_libraries(ESC PRIVATE glfw glm::glm Vulkan::Vulkan)

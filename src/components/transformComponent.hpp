@@ -5,7 +5,7 @@
 
 struct TransformComponent
 {
-    glm::vec3 position;
+    glm::mat4 position;
 };
 
 
