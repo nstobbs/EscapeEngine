@@ -746,3 +746,39 @@ void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInp
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
     vkFreeMemory(context.device, stagingBufferMemory, nullptr);
 };
+
+void createUniformBuffer(vulkanContext& context)
+{
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+    context.uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    context.uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+    context.uniformBufferMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        createBuffer(context, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     context.uniformBuffers[i], context.uniformBuffersMemory[i]);
+        vkMapMemory(context.device, context.uniformBuffersMemory[i], 0, bufferSize, 0, &context.uniformBufferMapped[i]);
+    };
+};
+
+void createDescriptorPool(vulkanContext& context)
+{
+    std::array<VkDescriptorPoolSize, 1> poolSize{};
+    poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    /* Texture Loading Happens Here - WIP */
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
+    poolInfo.pPoolSizes = poolSize.data();
+    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+    if (vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE DESCRIPTOR POOL.");
+    };
+};

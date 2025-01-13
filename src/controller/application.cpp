@@ -68,6 +68,8 @@ void Application::startUp()
     };
     createVertexBuffer(m_vulkanContext, meshData);
     createIndexBuffer(m_vulkanContext, indicesData);
+    createUniformBuffer(m_vulkanContext);
+    createDescriptorPool(m_vulkanContext);
 };
 
 void Application::loop()
