@@ -35,7 +35,9 @@ void Application::startUp()
         shader.ID = m_vulkanContext.shaderCount;
         createGraphicsPipeline(m_vulkanContext, shader.fragmentSourcePath, shader.vertexSourcePath);
     };
-    
+
+    createCommandPool(m_vulkanContext);
+    createDepthResources(m_vulkanContext);
 };
 
 void Application::loop()

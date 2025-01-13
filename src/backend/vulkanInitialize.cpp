@@ -288,6 +288,45 @@ void createSwapChain(vulkanContext& context, GLFWwindow* window)
     context.swapChainExtent = extent;
 };
 
+void createImage(vulkanContext& context, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                 VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+{
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = tiling;
+    imageInfo.usage = usage;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.flags = 0;
+
+    if (vkCreateImage(context.device, &imageInfo, nullptr, &image) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE IMAGE.");
+    };
+
+    VkMemoryRequirements memRequirements;
+    vkGetImageMemoryRequirements(context.device, image, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(context, memRequirements.memoryTypeBits, properties);
+
+    if (vkAllocateMemory(context.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO ALLOCATE IMAGE MEMORY.");
+    };
+
+    vkBindImageMemory(context.device, image, imageMemory, 0);
+};
+
 /* Creates the Vulkan ImageViews for a VulkanContext */
 void createImageViews(vulkanContext& context)
 {
@@ -295,18 +334,18 @@ void createImageViews(vulkanContext& context)
 
     for (uint32_t i = 0; i < context.swapChainImages.size(); i++)
     {
-        context.swapChainImageViews[i] = createImageView(context, i, VK_IMAGE_ASPECT_COLOR_BIT);
+        context.swapChainImageViews[i] = createImageView(context, context.swapChainImages[i], context.swapChainImageFormat,  VK_IMAGE_ASPECT_COLOR_BIT);
     }
 };
 
 /* Creates a VkImageView on a VulkanContext*/
-VkImageView createImageView(vulkanContext& context, uint32_t imageIndex, VkImageAspectFlags aspectFlags)
+VkImageView createImageView(vulkanContext& context, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = context.swapChainImages[imageIndex];
+    viewInfo.image = image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = context.swapChainImageFormat;
+    viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
@@ -600,4 +639,33 @@ void createGraphicsPipeline(vulkanContext& context, std::string& fragmentPath, s
 
     vkDestroyShaderModule(context.device, vertShaderModule, nullptr);
     vkDestroyShaderModule(context.device, fragShaderModule, nullptr);
+};
+
+void createCommandPool(vulkanContext& context)
+{
+    QueueFamilyIndices QueueFamilyIndices = findQueueFamilies(context.physicalDevice, context.surface);
+
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = QueueFamilyIndices.graphicsFamily.value();
+
+    if (vkCreateCommandPool(context.device, &poolInfo, nullptr, &context.commandPool) != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE COMMAND POOL.");
+    }
+
+};
+
+void createDepthResources(vulkanContext& context)
+{
+    VkFormat depthFormat = findDepthFormat(context);
+
+    createImage(context, context.swapChainExtent.width, context.swapChainExtent.height, depthFormat,
+                VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, context.depthImage, context.depthImageMemory);
+    context.depthImageView = createImageView(context, context.depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+    transitionImageLayout(context, context.depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 };
