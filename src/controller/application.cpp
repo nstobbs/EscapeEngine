@@ -70,6 +70,9 @@ void Application::startUp()
     createIndexBuffer(m_vulkanContext, indicesData);
     createUniformBuffer(m_vulkanContext);
     createDescriptorPool(m_vulkanContext);
+    createDescriptorSets(m_vulkanContext);
+    createCommandBuffers(m_vulkanContext);
+    createSyncObjects(m_vulkanContext);
 };
 
 void Application::loop()
