@@ -10,13 +10,13 @@ int main()
     /* Create Entity */
     Entity CardEntity = SceneObject.makeEntity();
     MeshComponent CardMeshComponent;
-    CardMeshComponent.vertices = {0.5f, 0.5f, 0.0f, //0
-                                  -0.5f, 0.5f, 0.0f, //1
-                                  -0.5f, -0.5f, 0.0f, //2
-                                  0.5f, -0.5f, 0.0f}; //3
-    
-    CardMeshComponent.verticesCount = 6;
-    CardMeshComponent.indices = {1, 0, 3, 3, 2, 1};
+    CardMeshComponent.vertices = {-0.5f, -0.5f, 0.0f,  //0
+                                   0.5f,  0.5f, 0.0f,  //1
+                                   0.5f,  0.5f, 0.0f,  //2
+                                  -0.5f,  0.5f, 0.0f}; //3
+    CardMeshComponent.verticesCount = 4;
+    CardMeshComponent.indices = {0, 1, 2, 2, 3, 0};
+    CardMeshComponent.indicesCount =  6;
     SceneObject.setEntityMeshComponent(CardEntity, CardMeshComponent);
 
     TransformComponent CardTransformComponent;

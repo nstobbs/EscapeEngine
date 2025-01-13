@@ -45,8 +45,8 @@ struct vulkanContext
     VkImageView depthImageView;
 
     /* Pipeline Related */
-    VkPipelineLayout pipelineLayout; /* Seems like we only needs one piplineLayout for now ??*/
     uint32_t shaderCount;
+    VkPipelineLayout pipelineLayout; /* Seems like we only needs one piplineLayout for now ??*/
     std::vector<VkPipeline> graphicsPiplines;
 
     /* Sync Object Related*/
@@ -55,10 +55,11 @@ struct vulkanContext
     std::vector<VkFence> inFlightFences;
 
     /* Vertex Buffer Related */
+    uint32_t meshCount;
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
-    VkDeviceMemory IndexBufferMemory;
+    VkDeviceMemory indexBufferMemory;
 
     /* Uniform Buffer Related*/
     std::vector<VkBuffer> uniformBuffers;

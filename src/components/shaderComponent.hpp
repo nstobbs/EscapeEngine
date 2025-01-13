@@ -9,6 +9,8 @@ struct ShaderComponent
     Create the Graphics Pipeline*/
     std::string vertexSourcePath;
     std::string fragmentSourcePath;
+    
+    /* ID FOR BACKEND */
     uint32_t ID;
 };
 

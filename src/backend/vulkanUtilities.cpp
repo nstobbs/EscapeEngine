@@ -8,7 +8,7 @@ void checkVulkanResult(VkResult result)
     }
 };
 /* TODO TEMP Function. Will need to be moved to meshComponent or VulkanBackend stuff */
-/* These Functions Describes how the vertex buffer is format */
+/* These Functions Describes how the vertex buffer is formatted */
 VkVertexInputBindingDescription getBindingDescription()
 {
     VkVertexInputBindingDescription bindingDescription{};

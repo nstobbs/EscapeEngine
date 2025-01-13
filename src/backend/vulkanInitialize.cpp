@@ -669,3 +669,80 @@ void createDepthResources(vulkanContext& context)
     transitionImageLayout(context, context.depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 };
+
+void createFramebuffers(vulkanContext& context)
+{
+    context.swapChainFramesBuffers.resize(context.swapChainImageViews.size());
+
+    for (size_t i = 0; i < context.swapChainImageViews.size(); i++)
+    {
+        std::array<VkImageView, 2> attachments = {
+            context.swapChainImageViews[i],
+            context.depthImageView};
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = context.renderPass;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = context.swapChainExtent.width;
+        framebufferInfo.height = context.swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(context.device, &framebufferInfo, nullptr, &context.swapChainFramesBuffers[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("{ERROR} FAILED TO CREATE FRAMEBUFFERS.");
+        };
+    };
+};
+
+void createVertexBuffer(vulkanContext& context, std::vector<float>& verticesInput)
+{
+    VkDeviceSize bufferSize = sizeof(verticesInput[0]) * verticesInput.size();
+
+    /* Staging Buffer */
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, verticesInput.data(), (size_t) bufferSize);
+    vkUnmapMemory(context.device, stagingBufferMemory);
+
+    /* Transfer Stage Buffer to Stage Buffer */
+    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, context.vertexBuffer, context.vertexBufferMemory);
+    copyBuffer(context, stagingBuffer, context.vertexBuffer, bufferSize);
+
+    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
+    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
+};
+
+void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput)
+{
+    VkDeviceSize bufferSize = sizeof(indicesInput[0]) * indicesInput.size();
+
+    /* Staging Buffer */
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                 stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indicesInput.data(), (size_t) bufferSize);
+    vkUnmapMemory(context.device, stagingBufferMemory);
+
+    /* Transfer Stage Buffer to Stage Buffer */
+    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, context.indexBuffer, context.indexBufferMemory);
+    copyBuffer(context, stagingBuffer, context.indexBuffer, bufferSize);
+
+    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
+    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
+};

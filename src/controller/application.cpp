@@ -38,6 +38,36 @@ void Application::startUp()
 
     createCommandPool(m_vulkanContext);
     createDepthResources(m_vulkanContext);
+    createFramebuffers(m_vulkanContext);
+    /* Texture Loading Happens Here - WIP */
+
+    /* All MeshComponents should be setup
+    before creating the VertexBuffers */
+    m_vulkanContext.meshCount = 0;
+    uint32_t firstVertex = 0;
+    uint32_t firstIndex = 0;
+    std::vector<float> meshData;
+    std::vector<uint32_t> indicesData;
+    for (auto& [entityID, mesh] : m_Scene->m_MeshComponents)
+    {
+        m_vulkanContext.meshCount++;
+        mesh.ID = m_vulkanContext.meshCount;
+        for (float& vertex : mesh.vertices)
+        {
+            meshData.push_back(vertex);
+        };
+        mesh.details.firstVertex = firstVertex;
+        firstVertex = firstVertex + mesh.verticesCount;
+
+        for (uint32_t& index : mesh.indices)
+        {
+            indicesData.push_back(index);
+        };
+        mesh.details.firstIndex = firstIndex;
+        firstIndex = firstIndex + mesh.indicesCount;
+    };
+    createVertexBuffer(m_vulkanContext, meshData);
+    createIndexBuffer(m_vulkanContext, indicesData);
 };
 
 void Application::loop()

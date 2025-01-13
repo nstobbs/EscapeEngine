@@ -9,9 +9,20 @@ struct Vertex {
     glm::vec3 texCoord;
 };
 
+struct MeshDetails {
+    uint32_t firstVertex;
+    uint32_t firstIndex;
+};
+
 struct MeshComponent {
     uint32_t verticesCount;
+    uint32_t indicesCount;
     std::vector<float> vertices; // Temp Set to Vertex
     std::vector<uint32_t> indices;
+
+    /* ID FOR BACKEND */
+    uint32_t ID;
+    MeshDetails details;
 };
+
 #endif
