@@ -78,10 +78,13 @@ void Application::startUp()
 void Application::loop()
 {
     std::cout << "{INFO} Starting Loop...\n";
+    RenderSystem RSystem(m_vulkanContext, m_Scene, m_window);
+    RSystem.start();
     while(!glfwWindowShouldClose(m_window))
     {
         glfwPollEvents();
         /* System Updates Happen Here*/
+        RSystem.update();
     }
 };
 

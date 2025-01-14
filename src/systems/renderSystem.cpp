@@ -1,10 +1,9 @@
 #include "renderSystem.hpp"
 
-RenderSystem::RenderSystem(vulkanContext& context, Scene& scene, GLFWwindow& window)
+RenderSystem::RenderSystem(vulkanContext& context, Scene* scene, GLFWwindow* window) : m_context(context)
 {
-    m_context = context;
-    m_scene = &scene;
-    m_window = &window;
+    m_scene = scene;
+    m_window = window;
 };
 
 void RenderSystem::start()
@@ -51,7 +50,8 @@ void RenderSystem::update()
     vkResetFences(m_context.device, 1, &m_context.inFlightFences[m_context.currentFrame]);
     vkResetCommandBuffer(m_context.commandBuffers[m_context.currentFrame], 0);
 
-    recordCommandBuffer(m_context.commandBuffers[m_context.currentFrame], imageIndex);
+    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
+    recordCommandBuffer(m_context.commandBuffers[m_context.currentFrame], imageIndex, signalSemaphores); 
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -65,7 +65,7 @@ void RenderSystem::update()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_context.commandBuffers[m_context.currentFrame];
 
-    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
+    
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -80,7 +80,7 @@ void RenderSystem::update()
 
 };
 
-void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, VkSemaphore FsignalSemaphores[])
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -100,7 +100,7 @@ void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t i
     renderPassInfo.renderArea.extent = m_context.swapChainExtent;
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.1, 0.1f, 0.1f, 1.0f}};
+    clearValues[0].color = {{0.1f, 0.1f, 0.1f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -152,12 +152,11 @@ void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t i
     {
         throw std::runtime_error("{ERROR} FAILED TO RECORD COMMAND BUFFER.");
     };
-    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.pWaitSemaphores = FsignalSemaphores;
 
     VkSwapchainKHR swapChains[] = {m_context.swapChain};
     presentInfo.swapchainCount = 1;

@@ -8,7 +8,7 @@
 #include "../backend/vulkanInitialize.hpp"
 #include "../backend/vulkanDebug.hpp"
 
-//#include "../components/shaderComponent.hpp"
+#include "../systems/renderSystem.hpp"
 
 #include "scene.hpp"
 
