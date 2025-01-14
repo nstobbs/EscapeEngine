@@ -14,7 +14,7 @@ void Application::run()
 
 void Application::startUp()
 {
-    m_window = initializeWindow();
+    m_window = initializeWindow(m_vulkanContext);
     createVulkanInstance(m_vulkanContext);
     setupDebugMessenger(m_vulkanContext);
     createSurface(m_vulkanContext, m_window);

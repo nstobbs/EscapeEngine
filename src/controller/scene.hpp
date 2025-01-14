@@ -17,6 +17,7 @@ class Scene
 
         CameraComponent getActiveCamera();
         void setActiveCamera(CameraComponent camera);
+        glm::mat4 getCameraView();
 
         void setEntityTransformComponent(Entity ID, TransformComponent transform);
         void setEntityMeshComponent(Entity ID, MeshComponent mesh);

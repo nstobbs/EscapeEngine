@@ -69,6 +69,10 @@ void updateUniformBuffer(vulkanContext& context, Scene& scene, uint32_t currentI
 
     UniformBufferObject ubo{};
     ubo.modelTransforms = glm::mat4(1.0f);
-    ubo.cameraView = 
+    ubo.cameraView = scene.getCameraView();
+    ubo.cameraProjection = glm::perspective(glm::radians(scene.getActiveCamera().focalLength),
+                            context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 1.0f);
+    ubo.cameraProjection[1][1] *= -1;
 
+    memcpy(context.uniformBufferMapped[context.currentFrame], &ubo, sizeof(ubo));
 };

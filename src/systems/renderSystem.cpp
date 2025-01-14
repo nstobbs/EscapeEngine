@@ -53,7 +53,30 @@ void RenderSystem::update()
 
     recordCommandBuffer(m_context.commandBuffers[m_context.currentFrame], imageIndex);
 
-    
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {m_context.imageAvailableSemaphores[m_context.currentFrame]};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &m_context.commandBuffers[m_context.currentFrame];
+
+    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit(m_context.graphicQueue, 1, &submitInfo,
+                      m_context.inFlightFences[m_context.currentFrame]) != VK_SUCCESS)
+    {
+        std::runtime_error("{ERROR} FAILED TO SUBMIT DRAW COMMAND BUFFER.");
+    };
+
+
+
 
 };
 
@@ -129,4 +152,29 @@ void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t i
     {
         throw std::runtime_error("{ERROR} FAILED TO RECORD COMMAND BUFFER.");
     };
+    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
+
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+    VkSwapchainKHR swapChains[] = {m_context.swapChain};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains= swapChains;
+    presentInfo.pImageIndices = &imageIndex;
+
+    presentInfo.pResults = nullptr;
+    
+    VkResult result = vkQueuePresentKHR(m_context.presentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_context.frameBufferResized)
+    {
+        m_context.frameBufferResized = false;
+        recreateSwapChain(m_context, m_window);
+    } else if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("{ERROR} FAILED TO CREATE SWAPCHAIN.");
+    }
+
+    m_context.currentFrame = (m_context.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 };
