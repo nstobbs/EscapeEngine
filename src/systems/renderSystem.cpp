@@ -35,14 +35,14 @@ void RenderSystem::update()
     vkWaitForFences(m_context.device, 1, &m_context.inFlightFences[m_context.currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(m_context.device, m_context.swapChain, UINT64_MAX,
+    VkResult resultResize = vkAcquireNextImageKHR(m_context.device, m_context.swapChain, UINT64_MAX,
                                             m_context.imageAvailableSemaphores[m_context.currentFrame],
                                             VK_NULL_HANDLE, &imageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    if (resultResize == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreateSwapChain(m_context, m_window);
         return;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    } else if (resultResize != VK_SUCCESS && resultResize != VK_SUBOPTIMAL_KHR)
     {
         throw std::runtime_error("{ERROR} FAILED TO RE-CREATE SWAP CHAIN IMAGES");
     }
@@ -50,44 +50,13 @@ void RenderSystem::update()
     vkResetFences(m_context.device, 1, &m_context.inFlightFences[m_context.currentFrame]);
     vkResetCommandBuffer(m_context.commandBuffers[m_context.currentFrame], 0);
 
-    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
-    recordCommandBuffer(m_context.commandBuffers[m_context.currentFrame], imageIndex, signalSemaphores); 
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkSemaphore waitSemaphores[] = {m_context.imageAvailableSemaphores[m_context.currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_context.commandBuffers[m_context.currentFrame];
-
-    
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
-
-    if (vkQueueSubmit(m_context.graphicQueue, 1, &submitInfo,
-                      m_context.inFlightFences[m_context.currentFrame]) != VK_SUCCESS)
-    {
-        std::runtime_error("{ERROR} FAILED TO SUBMIT DRAW COMMAND BUFFER.");
-    };
-
-
-
-
-};
-
-void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, VkSemaphore FsignalSemaphores[])
-{
+    /*Record Command Buffer Start*/
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+    if (vkBeginCommandBuffer(m_context.commandBuffers[m_context.currentFrame], &beginInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("{ERROR} FAILED TO BEGIN COMMAND BUFFER.");
     };
@@ -106,7 +75,7 @@ void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t i
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(m_context.commandBuffers[m_context.currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     VkBuffer vertexBuffers[] = {m_context.vertexBuffer};
     VkDeviceSize offsets[] = {0};
@@ -128,35 +97,62 @@ void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t i
     {
 
         /* Get the ShaderID for this Entity */
-        uint32_t shaderID = m_scene->m_ShaderComponents.at((Entity)ent).ID;
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID]);
+        uint32_t shaderID = m_scene->m_ShaderComponents.at((Entity)(size_t)ent).ID;
+        vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],
+                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID]);
 
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, m_context.indexBuffer, 0, VK_INDEX_TYPE_UINT32); 
+        vkCmdBindVertexBuffers(m_context.commandBuffers[m_context.currentFrame],
+                                 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(m_context.commandBuffers[m_context.currentFrame], 
+                            m_context.indexBuffer, 0, VK_INDEX_TYPE_UINT32); 
 
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+        vkCmdSetViewport(m_context.commandBuffers[m_context.currentFrame], 
+                         0, 1, &viewport);
+        vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayout, 0, 0,
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayout, 0, 0,
                             &m_context.descriptorSets[m_context.currentFrame], 0, nullptr);
-        
-        uint32_t meshID = m_scene->m_MeshComponents.at((Entity)ent).ID;
-        uint32_t firstIndex = m_scene->m_MeshComponents.at((Entity)ent).details.firstIndex;
-        uint32_t indicesCount = m_scene->m_MeshComponents.at((Entity)ent).indicesCount;
-        vkCmdDrawIndexed(commandBuffer, indicesCount, 1, firstIndex, 0, 0);
+
+        uint32_t meshID = m_scene->m_MeshComponents.at((Entity)(size_t)ent).ID;
+        uint32_t firstIndex = m_scene->m_MeshComponents.at((Entity)(size_t)ent).details.firstIndex;
+        uint32_t indicesCount = m_scene->m_MeshComponents.at((Entity)(size_t)ent).indicesCount;
+        vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
     };
 
-    vkCmdEndRenderPass(commandBuffer);
+    vkCmdEndRenderPass(m_context.commandBuffers[m_context.currentFrame]);
 
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+    if (vkEndCommandBuffer(m_context.commandBuffers[m_context.currentFrame]) != VK_SUCCESS)
     {
         throw std::runtime_error("{ERROR} FAILED TO RECORD COMMAND BUFFER.");
+    };
+    /*Record Command Buffer End*/
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {m_context.imageAvailableSemaphores[m_context.currentFrame]};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &m_context.commandBuffers[m_context.currentFrame];
+
+    VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit(m_context.graphicQueue, 1, &submitInfo,
+                      m_context.inFlightFences[m_context.currentFrame]) != VK_SUCCESS)
+    {
+        std::runtime_error("{ERROR} FAILED TO SUBMIT DRAW COMMAND BUFFER.");
     };
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = FsignalSemaphores;
+    presentInfo.pWaitSemaphores = signalSemaphores;
 
     VkSwapchainKHR swapChains[] = {m_context.swapChain};
     presentInfo.swapchainCount = 1;
@@ -165,12 +161,12 @@ void RenderSystem::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t i
 
     presentInfo.pResults = nullptr;
     
-    VkResult result = vkQueuePresentKHR(m_context.presentQueue, &presentInfo);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_context.frameBufferResized)
+    VkResult resultPresent = vkQueuePresentKHR(m_context.presentQueue, &presentInfo);
+    if (resultPresent == VK_ERROR_OUT_OF_DATE_KHR || resultPresent == VK_SUBOPTIMAL_KHR || m_context.frameBufferResized)
     {
         m_context.frameBufferResized = false;
         recreateSwapChain(m_context, m_window);
-    } else if (result != VK_SUCCESS)
+    } else if (resultPresent != VK_SUCCESS)
     {
         throw std::runtime_error("{ERROR} FAILED TO CREATE SWAPCHAIN.");
     }
