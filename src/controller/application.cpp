@@ -48,6 +48,7 @@ void Application::startUp()
     uint32_t firstIndex = 0;
     std::vector<float> meshData;
     std::vector<uint32_t> indicesData;
+    uint32_t indexOffset = 0;
     for (auto& [entityID, mesh] : m_Scene->m_MeshComponents)
     {
         m_vulkanContext.meshCount++;
@@ -61,8 +62,9 @@ void Application::startUp()
 
         for (uint32_t& index : mesh.indices)
         {
-            indicesData.push_back(index);
+            indicesData.push_back((index + indexOffset));
         };
+        indexOffset += mesh.verticesCount;
         mesh.details.firstIndex = firstIndex;
         firstIndex = firstIndex + mesh.indicesCount;
     };

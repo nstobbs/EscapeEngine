@@ -98,9 +98,9 @@ void RenderSystem::update()
     {
 
         /* Get the ShaderID for this Entity */
-        uint32_t shaderID = m_scene->m_ShaderComponents.at(ent).ID;
+        uint32_t shaderID = (m_scene->m_ShaderComponents.at(ent).ID);
         vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],
-                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID]);
+                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID-1]);
 
         vkCmdBindVertexBuffers(m_context.commandBuffers[m_context.currentFrame],
                                  0, 1, vertexBuffers, offsets);
@@ -114,9 +114,9 @@ void RenderSystem::update()
         vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayout, 0, 1,
                             &m_context.descriptorSets[m_context.currentFrame], 0, nullptr);
 
-        uint32_t meshID = m_scene->m_MeshComponents.at((Entity)(size_t)ent).ID;
-        uint32_t firstIndex = m_scene->m_MeshComponents.at((Entity)(size_t)ent).details.firstIndex;
-        uint32_t indicesCount = m_scene->m_MeshComponents.at((Entity)(size_t)ent).indicesCount;
+        uint32_t meshID = m_scene->m_MeshComponents.at(ent).ID; // Doesn't seem needed 
+        uint32_t firstIndex = m_scene->m_MeshComponents.at(ent).details.firstIndex;
+        uint32_t indicesCount = m_scene->m_MeshComponents.at(ent).indicesCount;
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
     };
 

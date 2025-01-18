@@ -29,11 +29,43 @@ int main()
     CardShaderComponent.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
     SceneObject.setEntityShaderComponent(CardEntity, CardShaderComponent);
 
-    Entity BoxEntity = SceneObject.makeEntity();
-    ShaderComponent BoxShaderComponent;
-    BoxShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
-    BoxShaderComponent.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
-    SceneObject.setEntityShaderComponent(BoxEntity, BoxShaderComponent);
+    /* Test 2 Objects */
+    Entity Card2Entity = SceneObject.makeEntity();
+    MeshComponent Card2MeshComponent;
+    Card2MeshComponent.vertices = {-0.25f, -0.25f, 0.0f,  //0
+                                   0.75f,  -0.25f, 0.0f,  //1
+                                   0.75f,  0.75f, 0.0f,  //2
+                                  -0.25f,  0.75f, 0.0f}; //3
+    Card2MeshComponent.verticesCount = 4;
+    Card2MeshComponent.indices = {0, 1, 2, 2, 3, 0};
+    Card2MeshComponent.indicesCount = 6;
+    SceneObject.setEntityMeshComponent(Card2Entity, Card2MeshComponent);
+    TransformComponent Card2TransformComponent;
+    Card2TransformComponent.position = glm::mat4(1.0f);
+    SceneObject.setEntityTransformComponent(Card2Entity, Card2TransformComponent);
+    ShaderComponent Card2ShaderComponent;
+    Card2ShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
+    Card2ShaderComponent.fragmentSourcePath = "../../src/shaders/testFrag.spv";
+    SceneObject.setEntityShaderComponent(Card2Entity, Card2ShaderComponent);
+
+    /* Test 3 Objects */
+    Entity Card3Entity = SceneObject.makeEntity();
+    MeshComponent Card3MeshComponent;
+    Card3MeshComponent.vertices = {0.0f, 0.0f, 0.0f,  //0
+                                   1.0f,  0.0f, 0.0f,  //1
+                                   1.0f,  1.0f, 0.0f,  //2
+                                  0.0f,  1.0f, 0.0f}; //3
+    Card3MeshComponent.verticesCount = 4;
+    Card3MeshComponent.indices = {0, 1, 2, 2, 3, 0};
+    Card3MeshComponent.indicesCount = 6;
+    SceneObject.setEntityMeshComponent(Card3Entity, Card3MeshComponent);
+    TransformComponent Card3TransformComponent;
+    Card3TransformComponent.position = glm::mat4(1.0f);
+    SceneObject.setEntityTransformComponent(Card3Entity, Card3TransformComponent);
+    ShaderComponent Card3ShaderComponent;
+    Card3ShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
+    Card3ShaderComponent.fragmentSourcePath = "../../src/shaders/testFrag2.spv";
+    SceneObject.setEntityShaderComponent(Card3Entity, Card3ShaderComponent);
 
     /* Create Camera */
     CameraComponent Camera;
