@@ -91,10 +91,44 @@ void Application::loop()
 void Application::tearDown()
 {
     std::cout << "{INFO} Starting TearDown...\n";
+    vkDeviceWaitIdle(m_vulkanContext.device);
+    cleanupSwapChain(m_vulkanContext);
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.uniformBuffers[i], nullptr);
+        vkFreeMemory(m_vulkanContext.device, m_vulkanContext.uniformBuffersMemory[i], nullptr);
+    };
+
+    vkDestroyDescriptorPool(m_vulkanContext.device, m_vulkanContext.descriptorPool, nullptr);
+    vkDestroyDescriptorSetLayout(m_vulkanContext.device, m_vulkanContext.descriptorSetLayout, nullptr);
+
+    vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.indexBuffer, nullptr);
+    vkFreeMemory(m_vulkanContext.device, m_vulkanContext.vertexBufferMemory, nullptr);
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroySemaphore(m_vulkanContext.device, m_vulkanContext.imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(m_vulkanContext.device, m_vulkanContext.renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(m_vulkanContext.device, m_vulkanContext.inFlightFences[i], nullptr);
+    };
+
+    vkDestroyCommandPool(m_vulkanContext.device, m_vulkanContext.commandPool, nullptr);
+
+    for (auto& graphicPipeline : m_vulkanContext.graphicsPiplines)
+    {
+        vkDestroyPipeline(m_vulkanContext.device, graphicPipeline, nullptr);
+    };
+
+    vkDestroyPipelineLayout(m_vulkanContext.device, m_vulkanContext.pipelineLayout, nullptr);
+    vkDestroyRenderPass(m_vulkanContext.device, m_vulkanContext.renderPass, nullptr);
+
     if (ENABLE_VALIDATION_LAYERS)
     {
         DestroyDebugUtilsMessengerEXT(m_vulkanContext.instance, m_vulkanContext.debugMessenger, nullptr);
-    }
+    };
+
+    vkDestroyDevice(m_vulkanContext.device, nullptr);
 
     vkDestroySurfaceKHR(m_vulkanContext.instance, m_vulkanContext.surface, nullptr);
     vkDestroyInstance(m_vulkanContext.instance, nullptr);
