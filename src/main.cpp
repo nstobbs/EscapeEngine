@@ -10,11 +10,12 @@ int main()
     /* Create Entity */
     Entity CardEntity = SceneObject.makeEntity();
     MeshComponent CardMeshComponent;
+    // not really a vertex here, but each float. So each thrid float would be one whole vertex.
     CardMeshComponent.vertices = {-0.5f, -0.5f, 0.0f,  //0
-                                   0.5f,  0.5f, 0.0f,  //1
+                                   0.5f,  -0.5f, 0.0f,  //1
                                    0.5f,  0.5f, 0.0f,  //2
                                   -0.5f,  0.5f, 0.0f}; //3
-    CardMeshComponent.verticesCount = 4;
+    CardMeshComponent.verticesCount = 4; // I don't dont the issue with vertices being single floats matters cause of this
     CardMeshComponent.indices = {0, 1, 2, 2, 3, 0};
     CardMeshComponent.indicesCount =  6;
     SceneObject.setEntityMeshComponent(CardEntity, CardMeshComponent);

@@ -19,7 +19,7 @@ class RenderSystem
         GLFWwindow* m_window;
         vulkanContext& m_context;
 
-        std::vector<Entity*> m_renderableEntities;
+        std::vector<Entity> m_renderableEntities;
 };
 
 #endif

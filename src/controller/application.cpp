@@ -54,7 +54,7 @@ void Application::startUp()
         mesh.ID = m_vulkanContext.meshCount;
         for (float& vertex : mesh.vertices)
         {
-            meshData.push_back(vertex);
+            meshData.push_back(vertex); // not really a vertex here, but each float. So each thrid float would be one whole vertex.
         };
         mesh.details.firstVertex = firstVertex;
         firstVertex = firstVertex + mesh.verticesCount;

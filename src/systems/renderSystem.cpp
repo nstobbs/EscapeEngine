@@ -11,7 +11,7 @@ void RenderSystem::start()
     /* Check Every Entity Created
     And if they have a Mesh, Shader, Transform
     Components And Render that Image*/
-    std::vector<Entity*> renderableEntities;
+    std::vector<Entity> renderableEntities;
     for (Entity ent : m_scene->m_Entities)
     {
         uint32_t resultMesh = m_scene->m_MeshComponents.count(ent);
@@ -21,14 +21,15 @@ void RenderSystem::start()
         if (resultMesh != 0 && resultShader != 0 && resultTransform != 0)
         {
             /* IF a Entity has the required components then draw it*/
-            renderableEntities.push_back(&ent);
-        };
-        if (renderableEntities.size() != 0)
-        {
-            m_renderableEntities = renderableEntities;
+            renderableEntities.push_back(ent);
         };  
     };
-}
+
+    if (renderableEntities.size() != 0)
+    {
+        m_renderableEntities = renderableEntities;
+    };
+};
 
 void RenderSystem::update()
 {
@@ -93,11 +94,11 @@ void RenderSystem::update()
     scissor.extent = m_context.swapChainExtent;
 
     /* For Each Entity We Bind the Graphics Pipeline Set from it shaderComponent */
-    for (auto& ent : m_renderableEntities)
+    for (auto ent : m_renderableEntities)
     {
 
         /* Get the ShaderID for this Entity */
-        uint32_t shaderID = m_scene->m_ShaderComponents.at((Entity)(size_t)ent).ID;
+        uint32_t shaderID = m_scene->m_ShaderComponents.at(ent).ID;
         vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],
                          VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID]);
 
@@ -110,7 +111,7 @@ void RenderSystem::update()
                          0, 1, &viewport);
         vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
-        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayout, 0, 0,
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayout, 0, 1,
                             &m_context.descriptorSets[m_context.currentFrame], 0, nullptr);
 
         uint32_t meshID = m_scene->m_MeshComponents.at((Entity)(size_t)ent).ID;
