@@ -29,6 +29,9 @@ int main()
     CardShaderComponent.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
     SceneObject.setEntityShaderComponent(CardEntity, CardShaderComponent);
 
+    TextureComponent CardTextureComponent;
+    CardTextureComponent.texturePath = "../../textures/testTexture.png";
+
     /* Test 2 Objects */
     Entity Card2Entity = SceneObject.makeEntity();
     MeshComponent Card2MeshComponent;

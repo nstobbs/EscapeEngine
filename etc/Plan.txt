@@ -88,12 +88,6 @@ OBJ Loader
 Create Basic Shapes
     Functions for craeting basic Mesh Objects like Cube, Card, Sphere.
 
-CompileShader
-    Replace Bash and Bat scripts to use python instead for compiling the shaders.
-    Python script should find all of the shaders in the shader folder.
-    Find the Vulkan Shader compile program. Then compile all of the shaders
-    and place them into the shaders folder.
-
 DearImGui
     Need to setup the backend to support DeadImGUI.
     Create an simple UI to manage the Scene Data.

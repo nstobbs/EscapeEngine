@@ -36,11 +36,14 @@ add_executable(ESC src/main.cpp
 					src/backend/vulkanUtilities.hpp
 					src/backend/vulkanBuffer.cpp
 					src/backend/vulkanBuffer.hpp
+					src/backend/vulkanTexture.cpp
+					src/backend/vulkanTexture.hpp
 					src/backend/glfwInitialize.cpp
 					src/backend/glfwInitialize.hpp
 					src/components/meshComponent.hpp
 					src/components/shaderComponent.hpp
 					src/components/transformComponent.hpp
+					src/components/textureComponent.hpp
 					src/components/cameraComponent.hpp
 					src/systems/renderSystem.cpp
 					src/systems/renderSystem.hpp)

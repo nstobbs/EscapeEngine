@@ -39,7 +39,18 @@ void Application::startUp()
     createCommandPool(m_vulkanContext);
     createDepthResources(m_vulkanContext);
     createFramebuffers(m_vulkanContext);
+    
     /* Texture Loading Happens Here - WIP */
+    /* This is bad to have two loops fix later*/
+    for (auto& [entityID, textures] : m_Scene->m_TextureComponents)
+    {
+        for (auto& texture : textures)
+        {
+            createTextureImage(m_vulkanContext,texture.texturePath);
+        };
+    };
+    createTextureImageView(m_vulkanContext);
+    createTextureSampler(m_vulkanContext);
 
     /* All MeshComponents should be setup
     before creating the VertexBuffers */

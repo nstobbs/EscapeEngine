@@ -8,6 +8,7 @@
 #include "../components/meshComponent.hpp"
 #include "../components/transformComponent.hpp"
 #include "../components/shaderComponent.hpp"
+#include "../components/textureComponent.hpp"
 
 class Scene
 {
@@ -33,6 +34,7 @@ class Scene
         std::unordered_map<Entity, MeshComponent> m_MeshComponents;
         std::unordered_map<Entity, TransformComponent> m_TransformComponents;
         std::unordered_map<Entity, ShaderComponent> m_ShaderComponents;
+        std::unordered_map<Entity, std::vector<TextureComponent>> m_TextureComponents;
         std::vector<Entity> m_Entities;
 
     private:

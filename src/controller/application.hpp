@@ -7,6 +7,7 @@
 #include "../backend/glfwInitialize.hpp"
 #include "../backend/vulkanInitialize.hpp"
 #include "../backend/vulkanDebug.hpp"
+#include "../backend/vulkanTexture.hpp"
 
 #include "../systems/renderSystem.hpp"
 
