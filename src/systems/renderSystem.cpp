@@ -96,7 +96,8 @@ void RenderSystem::update()
     /* For Each Entity We Bind the Graphics Pipeline Set from it shaderComponent */
     for (auto ent : m_renderableEntities)
     {
-
+        /* Update the Uniform Buffer For the Object We are Currently Rendering*/
+        
         /* Get the ShaderID for this Entity */
         uint32_t shaderID = (m_scene->m_ShaderComponents.at(ent).ID);
         vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],

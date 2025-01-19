@@ -1,15 +1,17 @@
 #include "glfwInitialize.hpp"
 
-const int WIDTH = 800;
-const int HEIGHT = 600;
+const float ASPECT_RATIO = 16.0f/10.0f;
+const int HEIGHT = 640;
+const int WIDTH = HEIGHT * ASPECT_RATIO;
 
 GLFWwindow* initializeWindow(vulkanContext& context)
 {
     std::cout << "{INFO} initializeWindow started...\n";
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     GLFWwindow* window;
+    
     window = glfwCreateWindow(WIDTH, HEIGHT, "ESC", nullptr, nullptr); // TODO: MAKE CONST IN GLOBE FILE
     if (window == NULL)
     {
