@@ -64,7 +64,7 @@ int main()
     SceneObject.setEntityTransformComponent(Card3Entity, Card3TransformComponent);
     ShaderComponent Card3ShaderComponent;
     Card3ShaderComponent.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
-    Card3ShaderComponent.fragmentSourcePath = "../../src/shaders/testFrag2.spv";
+    Card3ShaderComponent.fragmentSourcePath = "../../src/shaders/test2Frag.spv";
     SceneObject.setEntityShaderComponent(Card3Entity, Card3ShaderComponent);
 
     /* Create Camera */
