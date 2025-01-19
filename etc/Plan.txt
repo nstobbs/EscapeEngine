@@ -58,3 +58,45 @@ Struct:
         to run our Boids Simulations.
         So storing Data that the PhysicsSystem will
         be using later. 
+
+TODO List:
+UniformBuffer
+    Decide how I want to handle this. Each shader will also need a
+    UniformBuffer for the Model, View, Projections matriex for the Camera and Positions.
+    Would be nice if I could add an unquire strct for each shader to be able to pass
+    textures and global shader properties.
+
+    When creating the shader, could be a good idea to create an unquire descriptor set and
+    layout. Based on connected Components to the shader. Like TextureComponents?
+
+TextureComponent
+    Stores the needed information to read a image.
+    Will need to add a way to attach a TextureComponent to a ShaderComponent.
+    Will also need to add the backend functions for this to work.
+
+CameraSystem
+    System for processing the Mouse and Keyboard inputs and transforms the active Camera.
+    Mainly in the style of Arcball Camera. Would be nice to be able to switch to different
+    camera movement styles like First Person Shooter style camera.
+
+Texture Loader
+    Reads an image into the CPU.
+
+OBJ Loader
+    Will need a way to fill the MeshComponents will data from an OBJ.
+
+Create Basic Shapes
+    Functions for craeting basic Mesh Objects like Cube, Card, Sphere.
+
+CompileShader
+    Replace Bash and Bat scripts to use python instead for compiling the shaders.
+    Python script should find all of the shaders in the shader folder.
+    Find the Vulkan Shader compile program. Then compile all of the shaders
+    and place them into the shaders folder.
+
+DearImGui
+    Need to setup the backend to support DeadImGUI.
+    Create an simple UI to manage the Scene Data.
+    Scene Tree / Graph.
+    Component Editor. Allow editing of Position, Rotations of Meshes.
+    Debug Overlays. FPS, Frametimes, CameraPosition.
