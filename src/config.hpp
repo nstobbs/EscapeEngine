@@ -3,6 +3,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "../lib/stb_image.h"
+
 /* If there is any errors
 related to GLFW and Vulkan
 this move this part back into

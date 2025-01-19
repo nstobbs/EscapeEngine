@@ -46,6 +46,7 @@ add_executable(ESC src/main.cpp
 					src/components/textureComponent.hpp
 					src/components/cameraComponent.hpp
 					src/systems/renderSystem.cpp
-					src/systems/renderSystem.hpp)
+					src/systems/renderSystem.hpp
+					lib/stb_image.h)
 					
 target_link_libraries(ESC PRIVATE glfw glm::glm Vulkan::Vulkan)

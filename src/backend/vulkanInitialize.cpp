@@ -288,6 +288,7 @@ void createSwapChain(vulkanContext& context, GLFWwindow* window)
     context.swapChainExtent = extent;
 };
 
+/* Need to move this to vulkanTextures.hpp*/
 void createImage(vulkanContext& context, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                  VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 {
@@ -339,6 +340,7 @@ void createImageViews(vulkanContext& context)
 };
 
 /* Creates a VkImageView on a VulkanContext*/
+/* Need to move this to vulkanTextures.hpp*/
 VkImageView createImageView(vulkanContext& context, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};
