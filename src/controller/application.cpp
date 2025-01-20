@@ -27,7 +27,7 @@ void Application::startUp()
 
     /* All ShaderComponents should be setup
     before creating the GraphicsPiplines */
-    createGraphicsPipelineLayout(m_vulkanContext); /* Might Need to add this to the loop if shaders need different UniformBuffers */
+    createGraphicsPipelineLayout(m_vulkanContext);
     m_vulkanContext.shaderCount = 0;
     for (auto& [entityID, shader] : m_Scene->m_ShaderComponents)
     {
@@ -39,7 +39,7 @@ void Application::startUp()
     createCommandPool(m_vulkanContext);
     createDepthResources(m_vulkanContext);
     createFramebuffers(m_vulkanContext);
-    
+
     /* Texture Loading Happens Here - WIP */
     /* This is bad to have two loops fix later*/
     for (auto& [entityID, textures] : m_Scene->m_TextureComponents)
@@ -81,9 +81,13 @@ void Application::startUp()
     };
     createVertexBuffer(m_vulkanContext, meshData);
     createIndexBuffer(m_vulkanContext, indicesData);
+
+    /* Uniform Buffers and Textures */
     createUniformBuffer(m_vulkanContext);
     createDescriptorPool(m_vulkanContext);
     createDescriptorSets(m_vulkanContext);
+
+    /* Command Buffer & Sync Objects */
     createCommandBuffers(m_vulkanContext);
     createSyncObjects(m_vulkanContext);
 };

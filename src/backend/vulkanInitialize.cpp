@@ -771,7 +771,9 @@ void createDescriptorPool(vulkanContext& context)
     std::array<VkDescriptorPoolSize, 1> poolSize{};
     poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    /* Texture Loading Happens Here - WIP */
+    /* Texture Loading Happens Here */
+    poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSize[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -807,7 +809,8 @@ void createDescriptorSets(vulkanContext& context)
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        /* Texture Loading Happens Here - WIP */
+        /* Texture Loading Happens Here */
+        /* Loop for each texture image */
         VkDescriptorImageInfo ImageInfo{};
 
         std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
