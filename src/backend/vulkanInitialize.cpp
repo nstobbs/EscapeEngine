@@ -768,7 +768,7 @@ void createUniformBuffer(vulkanContext& context)
 
 void createDescriptorPool(vulkanContext& context)
 {
-    std::array<VkDescriptorPoolSize, 1> poolSize{};
+    std::array<VkDescriptorPoolSize, 2> poolSize{};
     poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     /* Texture Loading Happens Here */
@@ -815,6 +815,7 @@ void createDescriptorSets(vulkanContext& context)
 
         std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+
         descriptorWrites[0].dstSet = context.descriptorSets[i];
         descriptorWrites[0].dstBinding = 0;
         descriptorWrites[0].dstArrayElement = 0;
