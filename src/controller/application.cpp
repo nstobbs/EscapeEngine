@@ -95,12 +95,14 @@ void Application::startUp()
 void Application::loop()
 {
     std::cout << "{INFO} Starting Loop...\n";
+    CameraSystem CSystem(m_Scene, m_window);
     RenderSystem RSystem(m_vulkanContext, m_Scene, m_window);
     RSystem.start();
     while(!glfwWindowShouldClose(m_window))
     {
         glfwPollEvents();
         /* System Updates Happen Here*/
+        CSystem.update();
         RSystem.update();
     }
 };

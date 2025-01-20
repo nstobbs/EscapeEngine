@@ -10,6 +10,7 @@
 #include "../backend/vulkanTexture.hpp"
 
 #include "../systems/renderSystem.hpp"
+#include "../systems/cameraSystem.hpp"
 
 #include "scene.hpp"
 

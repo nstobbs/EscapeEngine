@@ -97,7 +97,8 @@ void RenderSystem::update()
     for (auto ent : m_renderableEntities)
     {
         /* Update the Uniform Buffer For the Object We are Currently Rendering*/
-        
+        auto modelTransforms = m_scene->m_TransformComponents.at(ent);
+        updateUniformBuffer(m_context, m_scene, modelTransforms);
         /* Get the ShaderID for this Entity */
         uint32_t shaderID = (m_scene->m_ShaderComponents.at(ent).ID);
         vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],

@@ -749,6 +749,12 @@ void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInp
     vkFreeMemory(context.device, stagingBufferMemory, nullptr);
 };
 
+/* Should be in vulkanBuffer.hpp seems pretty random being here?*/
+/* This is just the Uniform Buffer for the MVP.
+    We create a space in GPU memory for that the GPU and CPU can see.
+    Here called uniformBuffersMapped. Later in the update function.
+    We will create the data we want on the CPU then copy it to the 
+    GPU, so that we can use those values in the shader.*/
 void createUniformBuffer(vulkanContext& context)
 {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);

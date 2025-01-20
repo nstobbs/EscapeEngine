@@ -84,17 +84,18 @@ void copyBufferToImage(vulkanContext& context, VkBuffer buffer, VkImage image, u
     endSingleTimeCommands(context, commandBuffer);
 };
 
-void updateUniformBuffer(vulkanContext& context, Scene& scene, uint32_t currentImage)
+void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponent& transform)
 {
+    /* Don't need this clock right now but could be useful later... */
     static auto startTime = std::chrono::high_resolution_clock::now();
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     UniformBufferObject ubo{};
-    ubo.modelTransforms = glm::mat4(1.0f);
-    ubo.cameraView = scene.getCameraView();
-    ubo.cameraProjection = glm::perspective(glm::radians(scene.getActiveCamera().focalLength),
+    ubo.modelTransforms = transform.position; // TODO Add and calculate all of the other transforms. rotations.. scale..
+    ubo.cameraView = scene->getCameraView();
+    ubo.cameraProjection = glm::perspective(glm::radians(scene->getActiveCamera().focalLength),
                             context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 1.0f);
     ubo.cameraProjection[1][1] *= -1;
 

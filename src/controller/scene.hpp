@@ -36,10 +36,10 @@ class Scene
         std::unordered_map<Entity, ShaderComponent> m_ShaderComponents;
         std::unordered_map<Entity, std::vector<TextureComponent>> m_TextureComponents;
         std::vector<Entity> m_Entities;
+        CameraComponent m_ActiveCamera;
 
     private:
         uint32_t m_EntitiesCount;
-        CameraComponent m_ActiveCamera;
 };
 
 #endif
