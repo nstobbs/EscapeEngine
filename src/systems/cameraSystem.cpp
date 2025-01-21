@@ -39,7 +39,6 @@ void CameraSystem::update()
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
     {
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide Cursor
-        mouseHidden = true;
         double x,y;
         glfwGetCursorPos(m_window, &x, &y);
 
@@ -69,10 +68,9 @@ void CameraSystem::update()
 
     }
 
-    if (mouseHidden)
+    if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
     {
         /* Return the Cursor*/
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        mouseHidden = false;
     }
 };  

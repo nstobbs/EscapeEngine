@@ -1,5 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
-
 #include "config.hpp"
 #include "controller/application.hpp"
 #include "controller/scene.hpp"
@@ -75,9 +73,9 @@ int main()
     /* Create Camera */
     CameraComponent Camera;
     Camera.focalLength = 45.0f;
-    Camera.front = glm::vec3(0.0f, 0.0f, 0.0f);
-    Camera.up = glm::vec3(0.0f, 0.0f, 1.0f);
-    Camera.position = glm::vec3(-1.0f, 0.0f, 1.0f);
+    Camera.front = glm::vec3(0.0f, 0.0f, 1.0f);
+    Camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+    Camera.position = glm::vec3(0.0f, 0.0f, 0.5f);
     SceneObject.setActiveCamera(Camera);
 
     /* Create Application */

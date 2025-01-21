@@ -25,7 +25,7 @@ void Scene::setActiveCamera(CameraComponent camera)
 
 glm::mat4 Scene::getCameraView()
 {
-    return glm::lookAt(Scene::m_ActiveCamera.position, Scene::m_ActiveCamera.front, Scene::m_ActiveCamera.up);
+    return glm::lookAt(m_ActiveCamera.position, m_ActiveCamera.front, m_ActiveCamera.up);
 }
 
 void Scene::setEntityTransformComponent(Entity ent, TransformComponent transform)

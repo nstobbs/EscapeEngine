@@ -102,8 +102,8 @@ void Application::loop()
     {
         glfwPollEvents();
         /* System Updates Happen Here*/
-        CSystem.update();
         RSystem.update();
+        CSystem.update(); // crash when it's placed before the rendersystem ??
     }
 };
 

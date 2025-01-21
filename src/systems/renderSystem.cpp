@@ -14,9 +14,9 @@ void RenderSystem::start()
     std::vector<Entity> renderableEntities;
     for (Entity ent : m_scene->m_Entities)
     {
-        uint32_t resultMesh = m_scene->m_MeshComponents.count(ent);
-        uint32_t resultShader = m_scene->m_ShaderComponents.count(ent);
-        uint32_t resultTransform = m_scene->m_TransformComponents.count(ent);
+        size_t resultMesh = m_scene->m_MeshComponents.count(ent);
+        size_t resultShader = m_scene->m_ShaderComponents.count(ent);
+        size_t resultTransform = m_scene->m_TransformComponents.count(ent);
 
         if (resultMesh != 0 && resultShader != 0 && resultTransform != 0)
         {
@@ -94,10 +94,10 @@ void RenderSystem::update()
     scissor.extent = m_context.swapChainExtent;
 
     /* For Each Entity We Bind the Graphics Pipeline Set from it shaderComponent */
-    for (auto ent : m_renderableEntities)
+    for (Entity ent : m_renderableEntities)
     {
         /* Update the Uniform Buffer For the Object We are Currently Rendering*/
-        auto modelTransforms = m_scene->m_TransformComponents.at(ent);
+        TransformComponent modelTransforms = m_scene->m_TransformComponents.at(ent);
         updateUniformBuffer(m_context, m_scene, modelTransforms);
         /* Get the ShaderID for this Entity */
         uint32_t shaderID = (m_scene->m_ShaderComponents.at(ent).ID);
