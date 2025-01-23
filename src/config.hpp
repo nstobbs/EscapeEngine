@@ -11,7 +11,6 @@
 related to GLFW and Vulkan
 this move this part back into
 config.cpp*/
-#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>

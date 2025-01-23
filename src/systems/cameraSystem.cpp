@@ -8,31 +8,38 @@ CameraSystem::CameraSystem(Scene* scene, GLFWwindow* window)
 
 void CameraSystem::update()
 {   
-    CameraComponent cam = m_scene->m_ActiveCamera;
-
+    // Print Camera Info
+    glm::vec3 temp1 = m_scene->m_ActiveCamera.front;
+    glm::vec3 temp2 = m_scene->m_ActiveCamera.position;
+    glm::vec3 temp3 = m_scene->m_ActiveCamera.up;
+    std::cout << "#####################################" << std::endl;
+    std::cout << "Front: " << temp1.x << " " << temp1.y << " " << temp1.z << std::endl;
+    std::cout << "position: " << temp2.x << " " << temp2.y << " " << temp2.z << std::endl;
+    std::cout << "Up: " << temp3.x << " " << temp3.y << " " << temp3.z << std::endl;
+    
     // Keyboard Input 
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
     {
         // Forward
-        m_scene->m_ActiveCamera.position += cameraSpeed *  cam.front;
+        m_scene->m_ActiveCamera.position = m_scene->m_ActiveCamera.position = (cameraSpeed * m_scene->m_ActiveCamera.front);
     };
 
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_TRUE)
     {
         // Left
-    m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(cam.front, cam.up)) * cameraSpeed;
+    m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
     };
 
     if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_TRUE)
     {
         // Backward
-        m_scene->m_ActiveCamera.position -= cameraSpeed *  cam.front;
+        m_scene->m_ActiveCamera.position -= cameraSpeed *  m_scene->m_ActiveCamera.front;
     };
 
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_TRUE)
     {
         // Right
-        m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(cam.front, cam.up)) * cameraSpeed;
+        m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
     };
 
     // Mouse Input

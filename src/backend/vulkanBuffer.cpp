@@ -94,7 +94,7 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
 
     UniformBufferObject ubo{};
     ubo.modelTransforms = transform.position; // TODO Add and calculate all of the other transforms. rotations.. scale..
-    ubo.cameraView = scene->getCameraView();
+    ubo.cameraView = glm::lookAt(scene->m_ActiveCamera.position, scene->m_ActiveCamera.front, scene->m_ActiveCamera.up);
     ubo.cameraProjection = glm::perspective(glm::radians(scene->getActiveCamera().focalLength),
                             context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 1.0f);
     ubo.cameraProjection[1][1] *= -1;
