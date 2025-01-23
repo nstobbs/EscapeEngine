@@ -3,7 +3,9 @@
 
 #include <vulkan/vulkan.h>
 
+// Thrid Party 
 #include "../lib/stb_image.h"
+#include "../lib/tiny_obj_loader.h"
 
 /* If there is any errors
 related to GLFW and Vulkan

@@ -48,7 +48,7 @@ void createCommandPool(vulkanContext& context);
 void createDepthResources(vulkanContext& context);
 void createFramebuffers(vulkanContext& context);
 /* TEMP CREATE VERTEX/INDEX BUFFER, WILL NEED TO SWITCH TO USING VERTEX INSTEAD OF FLOAT */
-void createVertexBuffer(vulkanContext& context, std::vector<float>& verticesInput); // Could move into vulkanBuffer.hpp
+void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInput); // Could move into vulkanBuffer.hpp
 void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput);
 void createUniformBuffer(vulkanContext& context); // TODO Instead of one UBO create one for each shaderComponent
 void createDescriptorPool(vulkanContext& context);

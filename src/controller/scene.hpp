@@ -20,13 +20,14 @@ class Scene
         void setActiveCamera(CameraComponent camera);
         glm::mat4 getCameraView();
 
-        void setEntityTransformComponent(Entity ID, TransformComponent transform);
-        void setEntityMeshComponent(Entity ID, MeshComponent mesh);
-        void setEntityShaderComponent(Entity ID, ShaderComponent shader);
+        void setEntityTransformComponent(Entity ent, TransformComponent transform);
+        void setEntityMeshComponent(Entity ent, MeshComponent mesh);
+        void setEntityShaderComponent(Entity ent, ShaderComponent shader);
+        void pushEntityTextureComponent(Entity ent, TextureComponent texture);
 
-        MeshComponent getMeshComponent(Entity ID);
-        TransformComponent getTransformComponent(Entity ID);
-        ShaderComponent getShaderComponent(Entity ID);
+        MeshComponent getMeshComponent(Entity ent);
+        TransformComponent getTransformComponent(Entity ent);
+        ShaderComponent getShaderComponent(Entity ent);
 
         /* TODO Rethink how to handle this.
         Was in Private but needs to be public

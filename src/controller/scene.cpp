@@ -43,6 +43,11 @@ void Scene::setEntityShaderComponent(Entity ent, ShaderComponent shader)
     m_ShaderComponents[ent] = shader;
 };
 
+void Scene::pushEntityTextureComponent(Entity ent, TextureComponent texture)
+{
+    m_TextureComponents[ent].push_back(texture);
+};
+
 TransformComponent Scene::getTransformComponent(Entity ent)
 {
     return m_TransformComponents[ent];

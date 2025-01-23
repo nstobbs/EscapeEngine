@@ -698,7 +698,7 @@ void createFramebuffers(vulkanContext& context)
     };
 };
 
-void createVertexBuffer(vulkanContext& context, std::vector<float>& verticesInput)
+void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInput)
 {
     VkDeviceSize bufferSize = sizeof(verticesInput[0]) * verticesInput.size();
 

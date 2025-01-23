@@ -5,8 +5,7 @@
 
 struct Vertex {
     glm::vec3 pos;
-    glm::vec3 color; // Don't really need this
-    glm::vec3 texCoord;
+    glm::vec2 texCoord;
 };
 
 struct MeshDetails {
@@ -15,10 +14,16 @@ struct MeshDetails {
 };
 
 struct MeshComponent {
-    uint32_t verticesCount;
+    /* Data */
+    uint32_t verticesCount; // check if I need this
     uint32_t indicesCount;
-    std::vector<float> vertices; // Temp Set to Vertex
+    
+    // maybe dont store this data on the cpu the whole time 
+    std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
+
+    /* Filepath */
+    std::string filepath;
 
     /* ID FOR BACKEND */
     uint32_t ID;

@@ -57,16 +57,16 @@ void Application::startUp()
     m_vulkanContext.meshCount = 0;
     uint32_t firstVertex = 0;
     uint32_t firstIndex = 0;
-    std::vector<float> meshData;
+    std::vector<Vertex> meshData;
     std::vector<uint32_t> indicesData;
     uint32_t indexOffset = 0;
     for (auto& [entityID, mesh] : m_Scene->m_MeshComponents)
     {
         m_vulkanContext.meshCount++;
         mesh.ID = m_vulkanContext.meshCount;
-        for (float& vertex : mesh.vertices)
+        for (Vertex& vertex : mesh.vertices)
         {
-            meshData.push_back(vertex); // not really a vertex here, but each float. So each thrid float would be one whole vertex.
+            meshData.push_back(vertex);
         };
         mesh.details.firstVertex = firstVertex;
         firstVertex = firstVertex + mesh.verticesCount;
