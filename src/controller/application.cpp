@@ -54,6 +54,7 @@ void Application::startUp()
 
     /* All MeshComponents should be setup
     before creating the VertexBuffers */
+    // Move this into it's own functoin
     m_vulkanContext.meshCount = 0;
     uint32_t firstVertex = 0;
     uint32_t firstIndex = 0;

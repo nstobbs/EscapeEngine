@@ -1,6 +1,8 @@
 [requires]
 glfw/3.4
 [generators]
+XcodeDeps
+XcodeToolchain
 CMakeDeps
 CMakeToolchain
 [layout]

@@ -14,7 +14,7 @@ class CameraSystem
         Scene* m_scene;
         GLFWwindow* m_window;
         float cameraSpeed = 1.0f;
-        float mouseSen = 0.05f; 
+        float mouseSen = 1.0f; 
         double lastX, lastY = 600; // TODO Set this to the center of the Window size at creations instead of this.
 
         float yaw = -90.0f;
