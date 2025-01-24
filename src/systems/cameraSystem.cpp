@@ -21,7 +21,7 @@ void CameraSystem::update()
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
     {
         // Forward
-        m_scene->m_ActiveCamera.position = m_scene->m_ActiveCamera.position = (cameraSpeed * m_scene->m_ActiveCamera.front);
+        m_scene->m_ActiveCamera.position += cameraSpeed *  m_scene->m_ActiveCamera.front;
     };
 
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_TRUE)
@@ -49,8 +49,12 @@ void CameraSystem::update()
         double x,y;
         glfwGetCursorPos(m_window, &x, &y);
 
-        float offsetX = (x - lastX) * mouseSen;
-        float offsetY = (y - lastY) * mouseSen;
+        
+
+        double offsetX = (x - lastX) * mouseSen;
+        double offsetY = (y - lastY) * mouseSen;;
+        std::cout << "############ MOUSE POS ############" << std::endl;
+        std::cout << "X: " << x << " Y: " << offsetY << std::endl;
         lastX = x;
         lastY = y;
 
