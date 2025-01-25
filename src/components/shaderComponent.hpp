@@ -12,6 +12,7 @@ struct ShaderComponent
     
     /* ID FOR BACKEND */
     uint32_t ID;
+    std::vector<uint32_t> textureIDs;
 };
 
 #endif

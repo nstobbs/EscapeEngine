@@ -52,7 +52,7 @@ void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInp
 void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput);
 void createUniformBuffer(vulkanContext& context); // TODO Instead of one UBO create one for each shaderComponent
 void createDescriptorPool(vulkanContext& context);
-void createDescriptorSets(vulkanContext& context);
+void createDescriptorSets(vulkanContext& context, Scene* scene);
 void createCommandBuffers(vulkanContext& context);
 void createSyncObjects(vulkanContext& context);
 

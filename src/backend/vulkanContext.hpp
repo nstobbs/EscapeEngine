@@ -62,10 +62,11 @@ struct vulkanContext
     VkDeviceMemory indexBufferMemory;
 
     /* Texture Related*/
+    uint32_t textureCount;
     std::vector<VkImage> textureImages;
     std::vector<VkDeviceMemory> textureImageMemorys;
     std::vector<VkImageView> textureImageViews;
-    VkSampler textureSampler; // Not sure if I really need more than one of these ???
+    std::vector<VkSampler> textureSamplers; // Not sure if I really need more than one of these ???
 
     /* Uniform Buffer Related*/
     std::vector<VkBuffer> uniformBuffers;

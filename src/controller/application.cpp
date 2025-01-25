@@ -46,6 +46,9 @@ void Application::startUp()
     {
         for (auto& texture : textures)
         {
+            m_vulkanContext.textureCount++;
+            uint32_t textureID = m_vulkanContext.textureCount;
+            m_Scene->m_ShaderComponents.at(entityID).textureIDs.push_back(textureID);
             createTextureImage(m_vulkanContext,texture.texturePath);
         };
     };
@@ -86,7 +89,7 @@ void Application::startUp()
     /* Uniform Buffers and Textures */
     createUniformBuffer(m_vulkanContext);
     createDescriptorPool(m_vulkanContext);
-    createDescriptorSets(m_vulkanContext);
+    createDescriptorSets(m_vulkanContext, m_Scene);
 
     /* Command Buffer & Sync Objects */
     createCommandBuffers(m_vulkanContext);

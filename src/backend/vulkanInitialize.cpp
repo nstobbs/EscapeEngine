@@ -793,7 +793,7 @@ void createDescriptorPool(vulkanContext& context)
     };
 };
 
-void createDescriptorSets(vulkanContext& context)
+void createDescriptorSets(vulkanContext& context, Scene* scene)
 {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, context.descriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
@@ -815,21 +815,42 @@ void createDescriptorSets(vulkanContext& context)
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        /* Texture Loading Happens Here */
-        /* Loop for each texture image */
-        VkDescriptorImageInfo ImageInfo{};
+        std::vector<VkWriteDescriptorSet> descriptorWrites{};
 
-        std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        VkWriteDescriptorSet uniformBufferDescriptorWrite;
+        uniformBufferDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 
-        descriptorWrites[0].dstSet = context.descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-        descriptorWrites[0].pImageInfo = nullptr;
-        descriptorWrites[0].pTexelBufferView = nullptr;
+        uniformBufferDescriptorWrite.dstSet = context.descriptorSets[i];
+        uniformBufferDescriptorWrite.dstBinding = 0;
+        uniformBufferDescriptorWrite.dstArrayElement = 0;
+        uniformBufferDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uniformBufferDescriptorWrite.descriptorCount = 1;
+        uniformBufferDescriptorWrite.pBufferInfo = &bufferInfo;
+        uniformBufferDescriptorWrite.pImageInfo = nullptr;
+        uniformBufferDescriptorWrite.pTexelBufferView = nullptr;
+        descriptorWrites.push_back(uniformBufferDescriptorWrite);
+
+        size_t imageCount = context.textureImages.size();
+        for (size_t i = 0; i < imageCount; i++)
+        {
+              /* Texture Loading Happens Here */
+            /* Loop for each texture image */
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = context.textureImageViews[i]; // TODO ADD MORE THAN ONE TEXTURE SUPPORT VERY IMPORTANT ! ! ! 
+            imageInfo.sampler = context.textureSamplers[i];
+            
+            VkWriteDescriptorSet imageSamplerDescriptorWrite;
+            imageSamplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            imageSamplerDescriptorWrite.dstSet = context.descriptorSets[i];
+            imageSamplerDescriptorWrite.dstBinding = 1;
+            imageSamplerDescriptorWrite.dstArrayElement = 0;
+            imageSamplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            imageSamplerDescriptorWrite.descriptorCount = 1;
+            imageSamplerDescriptorWrite.pImageInfo = &imageInfo;
+            descriptorWrites.push_back(imageSamplerDescriptorWrite);
+
+        }
 
         vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);  
     };

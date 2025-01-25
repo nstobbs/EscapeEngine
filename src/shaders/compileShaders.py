@@ -19,6 +19,11 @@ for sourcePath in shaderPaths:
         outputFilename = sourcePath.split('.', 1)[0] + "Frag.spv"
     elif sourcePath.endswith(".vert"):
         outputFilename = sourcePath.split('.', 1)[0] + "Vert.spv"
+    
     compileCommand = "{compilerPath} {sourcePath} -o {outputPath}".format(compilerPath=GLSLC_PATH, sourcePath=sourcePath, outputPath=outputFilename)
-    runCommand = subprocess.run(compileCommand, shell=True, check=True, capture_output=True, encoding="utf-8")
-    print(f"Command {runCommand.args} exited with {runCommand.returncode} code, output: \n{runCommand.stdout}")
+    try:        
+        runCommand = subprocess.run(compileCommand, shell=True, check=True, capture_output=True, encoding="utf-8")
+        print(f"Command {runCommand.args} exited with {runCommand.returncode} code, output: \n{runCommand.stdout}")
+    except subprocess.CalledProcessError as error:
+        print(f"Command Failed!")
+        print(error.output)
