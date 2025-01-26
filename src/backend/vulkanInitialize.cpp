@@ -459,17 +459,26 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
 
 void createDescriptorSetLayout(vulkanContext& context)
 {
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboLayoutBinding.descriptorCount = 1;
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     uboLayoutBinding.pImmutableSamplers = nullptr;
-
+    bindings.push_back(uboLayoutBinding);
+    
     /* TODO Add SamplerLayoutBinding Later Here for Textures */
+    /* I dont think this is used for the sampler binding anymore???*/
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    samplerLayoutBinding.binding = 1;
+    samplerLayoutBinding.descriptorCount = context.textureCount;
+    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    samplerLayoutBinding.pImmutableSamplers = 0;
+    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    bindings.push_back(samplerLayoutBinding);
 
-    std::array<VkDescriptorSetLayoutBinding, 1> bindings = {uboLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -819,7 +828,6 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
 
         VkWriteDescriptorSet uniformBufferDescriptorWrite;
         uniformBufferDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-
         uniformBufferDescriptorWrite.dstSet = context.descriptorSets[i];
         uniformBufferDescriptorWrite.dstBinding = 0;
         uniformBufferDescriptorWrite.dstArrayElement = 0;
@@ -831,26 +839,27 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         descriptorWrites.push_back(uniformBufferDescriptorWrite);
 
         size_t imageCount = context.textureImages.size();
-        for (size_t i = 0; i < imageCount; i++)
+        std::vector<VkDescriptorImageInfo> imageInfos;
+        for (size_t y = 0; y < imageCount; y++)
         {
               /* Texture Loading Happens Here */
             /* Loop for each texture image */
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = context.textureImageViews[i]; // TODO ADD MORE THAN ONE TEXTURE SUPPORT VERY IMPORTANT ! ! ! 
-            imageInfo.sampler = context.textureSamplers[i];
-            
-            VkWriteDescriptorSet imageSamplerDescriptorWrite;
-            imageSamplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            imageSamplerDescriptorWrite.dstSet = context.descriptorSets[i];
-            imageSamplerDescriptorWrite.dstBinding = 1;
-            imageSamplerDescriptorWrite.dstArrayElement = 0;
-            imageSamplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            imageSamplerDescriptorWrite.descriptorCount = 1;
-            imageSamplerDescriptorWrite.pImageInfo = &imageInfo;
-            descriptorWrites.push_back(imageSamplerDescriptorWrite);
-
+            imageInfo.imageView = context.textureImageViews[y]; // TODO ADD MORE THAN ONE TEXTURE SUPPORT VERY IMPORTANT ! ! ! 
+            imageInfo.sampler = nullptr;
+            imageInfos.push_back(imageInfo);
         }
+
+        VkWriteDescriptorSet imageSamplerDescriptorWrite;
+        imageSamplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        imageSamplerDescriptorWrite.dstSet = context.descriptorSets[i];
+        //imageSamplerDescriptorWrite.dstBinding = static_cast<uint32_t>(y) + 1;
+        imageSamplerDescriptorWrite.dstArrayElement = 0;
+        imageSamplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        imageSamplerDescriptorWrite.descriptorCount = 1;
+        //imageSamplerDescriptorWrite.pImageInfo = imageInfos;
+        //descriptorWrites.push_back(imageSamplerDescriptorWrite);
 
         vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);  
     };
