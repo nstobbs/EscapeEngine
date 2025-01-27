@@ -119,6 +119,22 @@ void RenderSystem::update()
         uint32_t meshID = m_scene->m_MeshComponents.at(ent).ID; // Doesn't seem needed 
         uint32_t firstIndex = m_scene->m_MeshComponents.at(ent).details.firstIndex;
         uint32_t indicesCount = m_scene->m_MeshComponents.at(ent).indicesCount;
+
+        /* TEMP ONLY SUPPORT ONE TEXTURE MATERIALS */
+        /* Push Constant FoR Sending TextureIndex*/
+        PushConstantTextureIndex index;
+        for (auto& texture : m_scene->m_TextureComponents.at(ent))
+        {
+            index.textureIndex = texture.ID - 1;
+        };
+
+        vkCmdPushConstants(m_context.commandBuffers[m_context.currentFrame], 
+                           m_context.pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT,
+                           0,
+                           sizeof(PushConstantTextureIndex),
+                           &index);
+
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
     };
 

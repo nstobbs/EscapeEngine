@@ -27,3 +27,5 @@ for sourcePath in shaderPaths:
     except subprocess.CalledProcessError as error:
         print(f"Command Failed!")
         print(error.output)
+
+#TODO Add commmand output prints for when the commands errors 

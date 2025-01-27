@@ -8,6 +8,7 @@
 #include "vulkanSwapChain.hpp"
 #include "vulkanShader.hpp"
 #include "vulkanBuffer.hpp"
+#include "vulkanTexture.hpp"
 
 struct QueueFamilyIndices
 {

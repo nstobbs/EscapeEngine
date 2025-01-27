@@ -23,12 +23,12 @@ void Application::startUp()
     createSwapChain(m_vulkanContext, m_window);
     createImageViews(m_vulkanContext);
     createRenderPass(m_vulkanContext);
-    createDescriptorSetLayout(m_vulkanContext);
-
+    
     /* All ShaderComponents should be setup
     before creating the GraphicsPiplines */
-    createGraphicsPipelineLayout(m_vulkanContext);
     m_vulkanContext.shaderCount = 0;
+    createDescriptorSetLayout(m_vulkanContext); // We should know how many textures samplers we are going to use
+    createGraphicsPipelineLayout(m_vulkanContext);
     for (auto& [entityID, shader] : m_Scene->m_ShaderComponents)
     {
         m_vulkanContext.shaderCount++;

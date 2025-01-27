@@ -459,15 +459,12 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
 
 void createDescriptorSetLayout(vulkanContext& context)
 {
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
-
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboLayoutBinding.descriptorCount = 1;
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     uboLayoutBinding.pImmutableSamplers = nullptr;
-    bindings.push_back(uboLayoutBinding);
     
     /* TODO Add SamplerLayoutBinding Later Here for Textures */
     /* I dont think this is used for the sampler binding anymore???*/
@@ -477,8 +474,8 @@ void createDescriptorSetLayout(vulkanContext& context)
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
     samplerLayoutBinding.pImmutableSamplers = 0;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    bindings.push_back(samplerLayoutBinding);
 
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -492,12 +489,17 @@ void createDescriptorSetLayout(vulkanContext& context)
 
 void createGraphicsPipelineLayout(vulkanContext& context)
 {
+    VkPushConstantRange  pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(PushConstantTextureIndex);
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
     pipelineLayoutInfo.pSetLayouts = &context.descriptorSetLayout;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     if (vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &context.pipelineLayout) != VK_SUCCESS)
     {
@@ -824,20 +826,18 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        std::vector<VkWriteDescriptorSet> descriptorWrites{};
+        std::array<VkWriteDescriptorSet, 2> setWrites{};
 
-        VkWriteDescriptorSet uniformBufferDescriptorWrite;
-        uniformBufferDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        uniformBufferDescriptorWrite.dstSet = context.descriptorSets[i];
-        uniformBufferDescriptorWrite.dstBinding = 0;
-        uniformBufferDescriptorWrite.dstArrayElement = 0;
-        uniformBufferDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uniformBufferDescriptorWrite.descriptorCount = 1;
-        uniformBufferDescriptorWrite.pBufferInfo = &bufferInfo;
-        uniformBufferDescriptorWrite.pImageInfo = nullptr;
-        uniformBufferDescriptorWrite.pTexelBufferView = nullptr;
-        descriptorWrites.push_back(uniformBufferDescriptorWrite);
-
+        setWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        setWrites[0].dstSet = context.descriptorSets[i];
+        setWrites[0].dstBinding = 0;
+        setWrites[0].dstArrayElement = 0;
+        setWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        setWrites[0].descriptorCount = 1;
+        setWrites[0].pBufferInfo = &bufferInfo;
+        setWrites[0].pImageInfo = nullptr;
+        setWrites[0].pTexelBufferView = nullptr;
+        
         size_t imageCount = context.textureImages.size();
         std::vector<VkDescriptorImageInfo> imageInfos;
         for (size_t y = 0; y < imageCount; y++)
@@ -851,17 +851,16 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
             imageInfos.push_back(imageInfo);
         }
 
-        VkWriteDescriptorSet imageSamplerDescriptorWrite;
-        imageSamplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        imageSamplerDescriptorWrite.dstSet = context.descriptorSets[i];
-        //imageSamplerDescriptorWrite.dstBinding = static_cast<uint32_t>(y) + 1;
-        imageSamplerDescriptorWrite.dstArrayElement = 0;
-        imageSamplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        imageSamplerDescriptorWrite.descriptorCount = 1;
-        //imageSamplerDescriptorWrite.pImageInfo = imageInfos;
-        //descriptorWrites.push_back(imageSamplerDescriptorWrite);
+        setWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        setWrites[1].dstSet = context.descriptorSets[i];
+        setWrites[1].pBufferInfo = 0;
+        setWrites[1].dstBinding = 1;
+        setWrites[1].dstArrayElement = 0;
+        setWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        setWrites[1].descriptorCount = imageCount;
+        setWrites[1].pImageInfo = imageInfos.data();
 
-        vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);  
+        vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);  
     };
 };
 

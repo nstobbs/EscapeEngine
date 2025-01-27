@@ -11,11 +11,12 @@ objects for our applications to function.
 
 struct vulkanContext
 {
+    /* ############ General Vulkan ############ */
     /* Devices Related */
     VkDevice device;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkInstance instance;
-
+    
     /* Debug */
     VkDebugUtilsMessengerEXT debugMessenger;
 
@@ -36,7 +37,7 @@ struct vulkanContext
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
 
-    /* Render Pass Related */
+     /* Render Pass Related */
     VkRenderPass renderPass;
 
     /* Depth Testing Related */
@@ -44,16 +45,15 @@ struct vulkanContext
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    /* Pipeline Related */
-    uint32_t shaderCount;
-    VkPipelineLayout pipelineLayout; /* Seems like we only needs one piplineLayout for now ??*/
-    std::vector<VkPipeline> graphicsPiplines;
-
     /* Sync Object Related*/
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
 
+    uint32_t currentFrame = 0;
+    bool frameBufferResized = false;
+
+    /* ############ Mesh Component ############*/
     /* Vertex Buffer Related */
     uint32_t meshCount;
     VkBuffer vertexBuffer;
@@ -61,23 +61,31 @@ struct vulkanContext
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 
+    /* ############ Transform Component ############*/
+    /* Uniform Buffer Related*/
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void*> uniformBufferMapped;
+
+    /* ############ Shader Component ############ */
+     /* Pipeline Related */
+    uint32_t shaderCount;
+    VkPipelineLayout pipelineLayout; // Materials with have the same binding layout for now
+    std::vector<VkPipeline> graphicsPiplines;
+
+    /* Descriptor Sets Related */
+    VkDescriptorPool descriptorPool;
+    VkDescriptorSetLayout descriptorSetLayout;
+    std::vector<VkDescriptorSet> descriptorSets;
+
+    /* ############ Texture Component ############*/
     /* Texture Related*/
     uint32_t textureCount;
     std::vector<VkImage> textureImages;
     std::vector<VkDeviceMemory> textureImageMemorys;
     std::vector<VkImageView> textureImageViews;
-    std::vector<VkSampler> textureSamplers; // Not sure if I really need more than one of these ???
+    VkSampler textureSampler; // We need more if we use different sampler settings. TODO ADD SETTINGS TO USE MORE THAN ONE
 
-    /* Uniform Buffer Related*/
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*> uniformBufferMapped;
-    VkDescriptorPool descriptorPool;
-    VkDescriptorSetLayout descriptorSetLayout;
-    std::vector<VkDescriptorSet> descriptorSets;
-
-    uint32_t currentFrame = 0;
-    bool frameBufferResized = false;
 };
 
 #endif
