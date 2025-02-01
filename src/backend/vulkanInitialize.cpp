@@ -470,7 +470,7 @@ void createDescriptorSetLayout(vulkanContext& context)
     /* I dont think this is used for the sampler binding anymore???*/
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = context.textureCount;
+    samplerLayoutBinding.descriptorCount = 1;//context.textureCount; // at this point we dont know how many texture we have FIX 
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
     samplerLayoutBinding.pImmutableSamplers = 0;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;

@@ -100,5 +100,5 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
                             (float) context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 100.0f);
     ubo.cameraProjection[1][1] *= -1;
 
-    memcpy(context.uniformBufferMapped[context.currentFrame], &ubo, sizeof(ubo));
+    memcpy(context.uniformBufferMapped[context.currentFrame], &ubo, sizeof(ubo)); // Current frame is zero. Causing an read access error
 };

@@ -130,7 +130,7 @@ void RenderSystem::update()
 
         vkCmdPushConstants(m_context.commandBuffers[m_context.currentFrame], 
                            m_context.pipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT,
+                           VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,
                            0,
                            sizeof(PushConstantTextureIndex),
                            &index);
