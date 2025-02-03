@@ -53,6 +53,21 @@ add_executable(ESC src/main.cpp
 					src/loaders/objLoader.cpp
 					src/loaders/objLoader.hpp
 					lib/stb_image.h
-					lib/tiny_obj_loader.h)
+					lib/tiny_obj_loader.h
+					lib/imgui/imconfig.h
+					lib/imgui/imgui_demo.cpp
+					lib/imgui/imgui_draw.cpp
+					lib/imgui/imgui_internal.h
+					lib/imgui/imgui_tables.cpp
+					lib/imgui/imgui_widgets.cpp
+					lib/imgui/imgui.cpp
+					lib/imgui/imgui.h
+					lib/imgui/imstb_rectpack.h
+					lib/imgui/imstb_textedit.h
+					lib/imgui/imstb_truetype.h
+					lib/imgui/imgui_impl_glfw.cpp
+					lib/imgui/imgui_impl_glfw.h
+					lib/imgui/imgui_impl_vulkan.cpp
+					lib/imgui/imgui_impl_vulkan.h)
 					
 target_link_libraries(ESC PRIVATE glfw glm::glm Vulkan::Vulkan)

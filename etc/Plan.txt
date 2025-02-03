@@ -82,11 +82,8 @@ CameraSystem
 Texture Loader
     Reads an image into the CPU.
 
-OBJ Loader
-    Will need a way to fill the MeshComponents will data from an OBJ.
-
 Create Basic Shapes
-    Functions for craeting basic Mesh Objects like Cube, Card, Sphere.
+    Functions for creating basic Mesh Objects like Cube, Card, Sphere.
 
 DearImGui
     Need to setup the backend to support DeadImGUI.
@@ -94,3 +91,40 @@ DearImGui
     Scene Tree / Graph.
     Component Editor. Allow editing of Position, Rotations of Meshes.
     Debug Overlays. FPS, Frametimes, CameraPosition.
+
+Compute
+    Look into how to get the compute pipeline working
+    and thinking about using it for the boids Physics
+    system. 
+
+
+Descriptors Plan
+
+1. Create Descriptors Layouts
+2. Tell the GraphicPipeline What our Layout looks like
+3. Create a Descriptors Pool based off the Size of the Descriptors Sets Layout. 
+    This will be used to allocate memory for our Shader?? i think...
+4. Then we create the actual Descriptors Sets to be used in the Shader.
+    I believe at this point we actual point the Descriptors Sets to the
+    data to use as well.
+
+Need a function to create descriptor layouts based
+ofd data we want to find it. e.g. Different uniformBuffers like camera transformations,
+model transformations, global lighting values, texture samplers, ...
+
+Descriptors pools. I don't really understand this part at all.
+
+Split With Common, Model, Shader?
+
+Camera <-----> Set 0
+vec3 view
+vec3 proj
+
+Common <-----> Set 1
+sampler _sampler
+...
+
+Model <-----> Set 2
+vec3 model
+texture _texture
+...
