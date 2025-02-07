@@ -1,5 +1,17 @@
 import os, sys, subprocess
+"""
+compileShaders.py
 
+Script for compiling all of the glsl source
+code files with .vert or .frag file extension
+in the current directory. 
+
+Requirements:
+    Requires VulkanSDK 1.3 or above.
+
+    Set System Environment Variable "GLSLC_PATH" to Vulkan's SDK GLSL Compiler.
+        Can be found near "{VulkanSDK Install Location}/x.x.xxx/Bin/glslc"
+"""
 try:
     GLSLC_PATH = os.environ["GLSLC_PATH"]
 except KeyError:

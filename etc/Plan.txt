@@ -116,15 +116,14 @@ Descriptors pools. I don't really understand this part at all.
 
 Split With Common, Model, Shader?
 
-Camera <-----> Set 0
+SceneUniformBuffer <-----> Set 0
 vec3 view
 vec3 proj
-
-Common <-----> Set 1
 sampler _sampler
+
+ObjectUniformBuffer <-----> Set 1
+vec3 modelTransforms
 ...
 
-Model <-----> Set 2
-vec3 model
+TextureUniformBuffer <-----> Set 2
 texture _texture
-...
