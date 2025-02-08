@@ -6,12 +6,6 @@
 #include "vulkanBuffer.hpp"
 #include "vulkanInitialize.hpp"
 
-struct PushConstantTextureIndex {
-
-    int textureIndex;
-
-};
-
 void createTextureImage(vulkanContext& context, const std::string texturePath);
 void createTextureImageView(vulkanContext& context);
 void createTextureSampler(vulkanContext& context);

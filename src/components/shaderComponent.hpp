@@ -3,13 +3,6 @@
 
 #include "../config.cpp"
  
-struct SceneUniformBuffer
-{
-    glm::mat4 view;
-    glm::mat4 proj;
-    // should manager the sampler too.
-};
-
 struct ShaderComponent
 {
     /* Should be Set Before 

@@ -2,6 +2,7 @@
 #define VULKAN_CONTEXT_H
 
 #include "../config.hpp"
+#include "../entity/entity.hpp"
 
 /*
 vulkanContext.hpp
@@ -70,12 +71,12 @@ struct vulkanContext
     /* ############ Shader Component ############ */
      /* Pipeline Related */
     uint32_t shaderCount;
-    VkPipelineLayout pipelineLayout; // Materials with have the same binding layout for now
+    std::unordered_map<Entity, VkPipelineLayout> pipelineLayouts;
     std::vector<VkPipeline> graphicsPiplines;
 
     /* Descriptor Sets Related */
     VkDescriptorPool descriptorPool;
-    VkDescriptorSetLayout descriptorSetLayout;
+    std::unordered_map<Entity, VkDescriptorSetLayout> descriptorSetLayouts;
     std::vector<VkDescriptorSet> descriptorSets;
 
     /* ############ Texture Component ############*/

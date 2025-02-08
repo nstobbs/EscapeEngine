@@ -7,6 +7,23 @@
 #include "vulkanContext.hpp"
 #include "vulkanUtilities.hpp"
 
+struct SceneUniformBuffer
+{
+    glm::mat4 view;
+    glm::mat4 proj;
+    // should manager the sampler too.
+};
+
+struct ObjectUniformBuffer
+{
+    glm::mat4 model;
+};
+
+struct PushConstantTextureIndex 
+{
+    int textureIndex;
+};
+
 uint32_t findMemoryType(vulkanContext& context, uint32_t typeFiler, VkMemoryPropertyFlags properties);
 void createBuffer(vulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, 
                   VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

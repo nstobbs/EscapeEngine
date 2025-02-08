@@ -466,64 +466,108 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
     throw std::runtime_error("{ERROR} FAILED TO FIND SUPPORTED FORMAT");
 };
 
-void createDescriptorSetLayout(vulkanContext& context)
+void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 {
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    
-    /* TODO Add SamplerLayoutBinding Later Here for Textures */
-    /* I dont think this is used for the sampler binding anymore???*/
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;//context.textureCount; // at this point we dont know how many texture we have FIX 
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-    samplerLayoutBinding.pImmutableSamplers = 0;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    if (vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &context.descriptorSetLayout) != VK_SUCCESS)
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+    for (auto& ent : scene->m_Entities)
     {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE DESCRIPTOR SET LAYOUT.");
-    };
+        if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end()) // TODO double check this
+        {
+            ShaderComponent currentShader = scene->m_ShaderComponents.at(ent);
+            VkDescriptorSetLayoutBinding sceneBufferBinding{};
+            sceneBufferBinding.binding = 0;
+            sceneBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            sceneBufferBinding.descriptorCount = 1; //?? TODO check this
+            sceneBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            sceneBufferBinding.pImmutableSamplers = nullptr;
+            bindings.push_back(sceneBufferBinding);
+
+            VkDescriptorSetLayoutBinding objectBufferBinding{};
+            objectBufferBinding.binding = 1; //TODO check this as well
+            objectBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            objectBufferBinding.descriptorCount = 1;
+            objectBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            objectBufferBinding.pImmutableSamplers = nullptr;
+            bindings.push_back(objectBufferBinding);
+
+            VkDescriptorSetLayoutBinding samplerBindings{};
+            samplerBindings.binding = 2;
+            samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+            samplerBindings.descriptorCount = 1;
+            samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            samplerBindings.pImmutableSamplers = &context.textureSampler;
+            bindings.push_back(samplerBindings);
+
+            // Find every texture and create an sampled image for it.
+            // Can look into texture Arrays in the furture.
+            if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end())
+            {
+                uint32_t texCount = 0;
+                for (auto& texture : scene->m_TextureComponents.at(ent))
+                {
+                    texCount++;
+                    VkDescriptorSetLayoutBinding imageBindings{};
+                    imageBindings.binding = 2 + texCount;
+                    imageBindings.descriptorCount = 1;
+                    imageBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                    imageBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+                    imageBindings.pImmutableSamplers = &context.textureSampler; //TODO double chcek this??
+                    bindings.push_back(imageBindings);
+                }
+            }
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+            layoutInfo.pBindings = bindings.data();
+
+            VkDescriptorSetLayout layout;
+
+            if (vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &layout) != VK_SUCCESS)
+            {
+                throw std::runtime_error("{ERROR} FAILED TO CREATE DESCIRPTOR SET!");
+            };
+            context.descriptorSetLayouts[ent] = layout;
+        }
+    }
 };
 
-void createGraphicsPipelineLayout(vulkanContext& context)
+void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
 {
-    /* Hopefully this wont be needed ever soon */
-    VkPushConstantRange  pushConstantRange{};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(PushConstantTextureIndex);
-
-    /* Will need to points to all of the descriptor sets we want to use
-    and count how many we have*/
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &context.descriptorSetLayout; // TODO UPDATE TO CREATE UNIQUE FOR EACH SHADER
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-    
-    /*This will need to be unique  for each entity */
-    if (vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &context.pipelineLayout) != VK_SUCCESS)
+    for (auto& ent : scene->m_Entities)
     {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE PIPELINE LAYOUT.");
-    };
+        if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
+        {
+            /* Hopefully this wont be needed ever soon */
+            VkPushConstantRange  pushConstantRange{};
+            pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            pushConstantRange.offset = 0;
+            pushConstantRange.size = sizeof(PushConstantTextureIndex);
+
+            /* Will need to points to all of the descriptor sets we want to use
+            and count how many we have*/
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo.setLayoutCount = 1;
+            pipelineLayoutInfo.pSetLayouts = &context.descriptorSetLayouts.at(ent); // TODO UPDATE TO CREATE UNIQUE FOR EACH SHADER
+            pipelineLayoutInfo.pushConstantRangeCount = 1;
+            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+            
+            /*This will need to be unique  for each entity */
+            VkPipelineLayout pipelineLayout;
+            if (vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+            {
+                throw std::runtime_error("{ERROR} FAILED TO CREATE PIPELINE LAYOUT.");
+            };
+            context.pipelineLayouts[ent] = pipelineLayout;
+        }
+    }
 };
 
-void createGraphicsPipeline(vulkanContext& context, std::string& fragmentPath, std::string& vertexPath)
+void createGraphicsPipeline(vulkanContext& context, Entity ent)// TODO START BACK HERE
 {
-    auto vertShaderCode = readShaderSourceFile(vertexPath);
-    auto fragShaderCode = readShaderSourceFile(fragmentPath);
+    auto vertShaderCode = readShaderSourceFile(shader.vertexSourcePath);
+    auto fragShaderCode = readShaderSourceFile(shader.fragmentPath);
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, context.device);
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};

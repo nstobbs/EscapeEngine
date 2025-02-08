@@ -36,11 +36,6 @@ struct Vertex {
 
 };
 
-struct ObjectUniformBuffer
-{
-    glm::mat4 model;
-};
-
 struct MeshDetails {
     uint32_t firstVertex;
     uint32_t firstIndex;
