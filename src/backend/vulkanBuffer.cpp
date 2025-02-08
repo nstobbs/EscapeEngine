@@ -100,5 +100,16 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
                             (float) context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 100.0f);
     ubo.cameraProjection[1][1] *= -1;
 
-    memcpy(context.uniformBufferMapped[context.currentFrame], &ubo, sizeof(ubo)); // Current frame is zero. Causing an read access error
+    SceneUniformBuffer sceneUBO{};
+    sceneUBO.view = glm::lookAt(scene->m_ActiveCamera.position, scene->m_ActiveCamera.position + scene->m_ActiveCamera.front, scene->m_ActiveCamera.up);
+    sceneUBO.proj = glm::perspective(glm::radians(scene->getActiveCamera().focalLength),
+                            (float) context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 100.0f);
+    sceneUBO.proj[1][1] *= -1;
+
+    ObjectUniformBuffer objectUBO{};
+    objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    //memcpy(context.uniformBufferMapped[context.currentFrame], &ubo, sizeof(ubo)); // Current frame is zero. Causing an read access error
+    memcpy(context.uniformBufferMapped[context.currentFrame], &sceneUBO, sizeof(sceneUBO));
+    memcpy(context.uniformBufferMapped[context.currentFrame + 2], &objectUBO, sizeof(objectUBO)); //TODO Again I don't think this very "safe" or smart
 };

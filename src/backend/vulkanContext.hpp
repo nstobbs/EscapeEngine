@@ -62,22 +62,23 @@ struct vulkanContext
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 
-    /* ############ Transform Component ############*/
-    /* Uniform Buffer Related*/
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*> uniformBufferMapped;
-
     /* ############ Shader Component ############ */
      /* Pipeline Related */
     uint32_t shaderCount;
     std::unordered_map<Entity, VkPipelineLayout> pipelineLayouts;
-    std::vector<VkPipeline> graphicsPiplines;
+    std::unordered_map<Entity, VkPipeline> graphicsPiplines;
+        
+    /* Uniform Buffer Related*/
+    uint32_t uniformBuffersCount = 0;
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void*> uniformBufferMapped;
+
 
     /* Descriptor Sets Related */
     VkDescriptorPool descriptorPool;
     std::unordered_map<Entity, VkDescriptorSetLayout> descriptorSetLayouts;
-    std::vector<VkDescriptorSet> descriptorSets;
+    std::unordered_map<Entity, std::vector<VkDescriptorSet>> descriptorSets;
 
     /* ############ Texture Component ############*/
     /* Texture Related*/

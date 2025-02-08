@@ -26,20 +26,24 @@ void Application::startUp()
     
     /* All ShaderComponents should be setup
     before creating the GraphicsPiplines */
+    // all of these create functions should be running under the same loop together
+    // instead of each looping over the shaderComponents maps 
+    // when you can do it all once in one loop 
     m_vulkanContext.shaderCount = 0;
-    createDescriptorSetLayout(m_vulkanContext); // We should know how many textures samplers we are going to use
-    createGraphicsPipelineLayout(m_vulkanContext);
+    createDescriptorSetLayout(m_vulkanContext, m_Scene); // We should know how many textures samplers we are going to use
+    createGraphicsPipelineLayout(m_vulkanContext, m_Scene);
     for (auto& [entityID, shader] : m_Scene->m_ShaderComponents)
     {
         m_vulkanContext.shaderCount++;
         shader.ID = m_vulkanContext.shaderCount;
-        createGraphicsPipeline(m_vulkanContext, shader.fragmentSourcePath, shader.vertexSourcePath);
+        createGraphicsPipeline(m_vulkanContext, m_Scene, entityID); 
     };
 
     createCommandPool(m_vulkanContext);
     createDepthResources(m_vulkanContext);
     createFramebuffers(m_vulkanContext);
 
+    // TODO MIGHT HAVE TO MOVE THIS....
     /* Texture Loading Happens Here - WIP */
     /* This is bad to have two loops fix later*/
     for (auto& [entityID, textures] : m_Scene->m_TextureComponents)
@@ -87,8 +91,10 @@ void Application::startUp()
     createIndexBuffer(m_vulkanContext, indicesData);
 
     /* Uniform Buffers and Textures */
-    createUniformBuffer(m_vulkanContext);
-    createDescriptorPool(m_vulkanContext);
+    //createUniformBuffer(m_vulkanContext, sizeof(UniformBufferObject)); // OLD
+    createUniformBuffer(m_vulkanContext, sizeof(SceneUniformBuffer));
+    createUniformBuffer(m_vulkanContext, sizeof(ObjectUniformBuffer));
+    createDescriptorPool(m_vulkanContext, m_Scene);
     createDescriptorSets(m_vulkanContext, m_Scene);
 
     /* Command Buffer & Sync Objects */
@@ -107,7 +113,7 @@ void Application::loop()
         glfwPollEvents();
         /* System Updates Happen Here*/
         RSystem.update();
-        CSystem.update(); // crash when it's placed before the rendersystem ??
+        //CSystem.update(); // crash when it's placed before the rendersystem ??
     }
 };
 
@@ -124,7 +130,10 @@ void Application::tearDown()
     };
 
     vkDestroyDescriptorPool(m_vulkanContext.device, m_vulkanContext.descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(m_vulkanContext.device, m_vulkanContext.descriptorSetLayout, nullptr);
+    for (auto& [ent, descriptorSetLayout] : m_vulkanContext.descriptorSetLayouts)
+    {
+        vkDestroyDescriptorSetLayout(m_vulkanContext.device, descriptorSetLayout, nullptr);
+    };
 
     vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.indexBuffer, nullptr);
     vkFreeMemory(m_vulkanContext.device, m_vulkanContext.vertexBufferMemory, nullptr);
@@ -138,12 +147,16 @@ void Application::tearDown()
 
     vkDestroyCommandPool(m_vulkanContext.device, m_vulkanContext.commandPool, nullptr);
 
-    for (auto& graphicPipeline : m_vulkanContext.graphicsPiplines)
+    for (auto& [ent, graphicPipeline] : m_vulkanContext.graphicsPiplines)
     {
         vkDestroyPipeline(m_vulkanContext.device, graphicPipeline, nullptr);
     };
 
-    vkDestroyPipelineLayout(m_vulkanContext.device, m_vulkanContext.pipelineLayout, nullptr);
+    for (auto& [ent, pipelineLayout] : m_vulkanContext.pipelineLayouts)
+    {
+        vkDestroyPipelineLayout(m_vulkanContext.device, pipelineLayout, nullptr);
+    };
+
     vkDestroyRenderPass(m_vulkanContext.device, m_vulkanContext.renderPass, nullptr);
 
     if (ENABLE_VALIDATION_LAYERS)

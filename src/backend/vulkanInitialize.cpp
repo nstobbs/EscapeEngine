@@ -468,12 +468,13 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
 
 void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 {
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
     for (auto& ent : scene->m_Entities)
     {
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end()) // TODO double check this
         {
+            std::vector<VkDescriptorSetLayoutBinding> bindings;
             ShaderComponent currentShader = scene->m_ShaderComponents.at(ent);
+
             VkDescriptorSetLayoutBinding sceneBufferBinding{};
             sceneBufferBinding.binding = 0;
             sceneBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -564,10 +565,15 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
     }
 };
 
-void createGraphicsPipeline(vulkanContext& context, Entity ent)// TODO START BACK HERE
+//TODO this function is hot trash, we shouldnt be looping with this functions and have 
+// different loops running in other functions for the creation process of the shaders
+// seems like just a waste of time doing that.  
+void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)// TODO START BACK HERE
 {
+    ShaderComponent shader = scene->m_ShaderComponents.at(ent);
+
     auto vertShaderCode = readShaderSourceFile(shader.vertexSourcePath);
-    auto fragShaderCode = readShaderSourceFile(shader.fragmentPath);
+    auto fragShaderCode = readShaderSourceFile(shader.fragmentSourcePath);
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, context.device);
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -693,7 +699,7 @@ void createGraphicsPipeline(vulkanContext& context, Entity ent)// TODO START BAC
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
 
-    pipelineInfo.layout = context.pipelineLayout;
+    pipelineInfo.layout = context.pipelineLayouts.at(ent);
     pipelineInfo.renderPass = context.renderPass;
     pipelineInfo.subpass = 0;
 
@@ -705,12 +711,13 @@ void createGraphicsPipeline(vulkanContext& context, Entity ent)// TODO START BAC
     {
         throw std::runtime_error("{ERROR} FAILED TO CREATE GRAPHIC PIPELINE");
     };
-    context.graphicsPiplines.push_back(graphicsPipline);
+    context.graphicsPiplines[ent] = graphicsPipline;
 
     vkDestroyShaderModule(context.device, vertShaderModule, nullptr);
     vkDestroyShaderModule(context.device, fragShaderModule, nullptr);
 };
 
+// TODO ADD SUPPORT FOR COMPUTE Command Pool :)
 void createCommandPool(vulkanContext& context)
 {
     QueueFamilyIndices QueueFamilyIndices = findQueueFamilies(context.physicalDevice, context.surface);
@@ -823,31 +830,54 @@ void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInp
     Here called uniformBuffersMapped. Later in the update function.
     We will create the data we want on the CPU then copy it to the 
     GPU, so that we can use those values in the shader.*/
-void createUniformBuffer(vulkanContext& context)
+void createUniformBuffer(vulkanContext& context, VkDeviceSize bufferSize)
 {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-    context.uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-    context.uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-    context.uniformBufferMapped.resize(MAX_FRAMES_IN_FLIGHT);
+    context.uniformBuffersCount++;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
+        VkBuffer buffer;
+        VkDeviceMemory bufferMemory;
+        void* bufferMapping;
+
         createBuffer(context, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     context.uniformBuffers[i], context.uniformBuffersMemory[i]);
-        vkMapMemory(context.device, context.uniformBuffersMemory[i], 0, bufferSize, 0, &context.uniformBufferMapped[i]);
+                     buffer, bufferMemory);
+        vkMapMemory(context.device, bufferMemory, 0, bufferSize, 0, &bufferMapping);
+        
+        context.uniformBuffers.push_back(buffer);
+        context.uniformBuffersMemory.push_back(bufferMemory);
+        context.uniformBufferMapped.push_back(bufferMapping);
     };
 };
 
-void createDescriptorPool(vulkanContext& context)
+void createDescriptorPool(vulkanContext& context, Scene* scene)
 {
-    std::array<VkDescriptorPoolSize, 2> poolSize{};
-    poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    std::vector<VkDescriptorPoolSize> poolSize{};
+
+    VkDescriptorPoolSize uniformBuffersPoolSize{};
+    uniformBuffersPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uniformBuffersPoolSize.descriptorCount = static_cast<uint32_t>(context.uniformBuffersCount * MAX_FRAMES_IN_FLIGHT);
+    poolSize.push_back(uniformBuffersPoolSize);
+    
     /* Texture Loading Happens Here */
-    poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    VkDescriptorPoolSize textureSamplerPoolSize{};
+    textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // Not doing this way anymore
+    textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSize.push_back(textureSamplerPoolSize);
+
+    /* Texture Images Sorted out here*/
+    // TODO Double check here, could be wrong
+   for (auto& ent : scene->m_Entities)
+   {
+        if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end()) // double check this
+        {
+            VkDescriptorPoolSize texturePoolSize{};
+            texturePoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            texturePoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+            poolSize.push_back(texturePoolSize);
+        } 
+   }
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -861,64 +891,88 @@ void createDescriptorPool(vulkanContext& context)
     };
 };
 
+// TODO this whole function needs rewriting
+// Not sure if the descriptor pool is big enough to allow us to bind all of this.
 void createDescriptorSets(vulkanContext& context, Scene* scene)
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, context.descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = context.descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data();
-
-    context.descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(context.device, &allocInfo, context.descriptorSets.data()))
+    for (auto& ent : scene->m_Entities)
     {
-        std::runtime_error("{ERROR} FAILED TO ALLOCATE DESCRIPTOR SETS");
-    };
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = context.uniformBuffers[i];
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
-
-        std::array<VkWriteDescriptorSet, 2> setWrites{};
-
-        setWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        setWrites[0].dstSet = context.descriptorSets[i];
-        setWrites[0].dstBinding = 0;
-        setWrites[0].dstArrayElement = 0;
-        setWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        setWrites[0].descriptorCount = 1;
-        setWrites[0].pBufferInfo = &bufferInfo;
-        setWrites[0].pImageInfo = nullptr;
-        setWrites[0].pTexelBufferView = nullptr;
-        
-        size_t imageCount = context.textureImages.size();
-        std::vector<VkDescriptorImageInfo> imageInfos;
-        for (size_t y = 0; y < imageCount; y++)
+        if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
-              /* Texture Loading Happens Here */
-            /* Loop for each texture image */
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = context.textureImageViews[y]; // TODO ADD MORE THAN ONE TEXTURE SUPPORT VERY IMPORTANT ! ! ! 
-            imageInfo.sampler = nullptr;
-            imageInfos.push_back(imageInfo);
+            ShaderComponent shader = scene->m_ShaderComponents.at(ent);
+
+            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, context.descriptorSetLayouts.at(ent));
+
+            VkDescriptorSetAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.descriptorPool = context.descriptorPool;
+            allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); // double check this as well 
+            allocInfo.pSetLayouts = layouts.data();
+            
+            context.descriptorSets.at(ent).resize(MAX_FRAMES_IN_FLIGHT);
+            if (vkAllocateDescriptorSets(context.device, &allocInfo, context.descriptorSets.at(ent).data()))
+            {
+                throw std::runtime_error("{ERROR} FAILED TO ALLOCATE DESCRIPTOR SETS!");
+            };
+
+            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+            {
+                VkDescriptorBufferInfo sceneBufferInfo{};
+                sceneBufferInfo.buffer = context.uniformBuffers.at(i);
+                sceneBufferInfo.offset = 0; // TODO double check this ??
+                sceneBufferInfo.range = sizeof(SceneUniformBuffer);
+
+                VkDescriptorBufferInfo objectBufferInfo{};
+                objectBufferInfo.buffer = context.uniformBuffers.at(i+2); // TODO i really dont like doing this, seems really wrong
+                objectBufferInfo.offset = 0;
+                objectBufferInfo.range = sizeof(ObjectUniformBuffer);
+
+                std::vector<VkWriteDescriptorSet> setWrites;
+
+                VkWriteDescriptorSet sceneWriteSet{};
+                sceneWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                sceneWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                sceneWriteSet.descriptorCount = 1;
+                sceneWriteSet.dstSet = context.descriptorSets.at(ent).at(i); // TODO double check this ??
+                sceneWriteSet.dstBinding = 0;
+                sceneWriteSet.dstArrayElement = 0;
+                sceneWriteSet.pBufferInfo = &sceneBufferInfo;
+                setWrites.push_back(sceneWriteSet);
+
+                VkWriteDescriptorSet objectWriteSet{};
+                objectWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                objectWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                objectWriteSet.descriptorCount = 1; //TODO double check this 
+                objectWriteSet.dstSet = context.descriptorSets.at(ent).at(i+2); // TODO i really dont like doing this, seems really wrong
+                objectWriteSet.dstBinding = 1;
+                objectWriteSet.dstArrayElement = 0;
+                objectWriteSet.pBufferInfo = &objectBufferInfo;
+                setWrites.push_back(objectWriteSet);
+
+                std::vector<VkDescriptorImageInfo> imageInfos;
+                uint32_t imageCount = 0;
+                for (auto& texture : shader.textureIDs)
+                {
+                    imageCount++;
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageView = context.textureImageViews[texture]; // TODO double check 
+                    imageInfo.sampler = context.textureSampler;
+                    imageInfos.push_back(imageInfo);
+                }
+
+                VkWriteDescriptorSet texturesWriteSet{};
+                texturesWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                texturesWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                texturesWriteSet.descriptorCount = imageCount;
+                texturesWriteSet.pImageInfo = imageInfos.data(); 
+                texturesWriteSet.dstBinding = 2;
+                setWrites.push_back(texturesWriteSet);
+
+                vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);
+            }
         }
-
-        setWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        setWrites[1].dstSet = context.descriptorSets[i];
-        setWrites[1].pBufferInfo = 0;
-        setWrites[1].dstBinding = 1;
-        setWrites[1].dstArrayElement = 0;
-        setWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        setWrites[1].descriptorCount = imageCount;
-        setWrites[1].pImageInfo = imageInfos.data();
-
-        vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);  
-    };
+    }
 };
 
 void createCommandBuffers(vulkanContext& context)

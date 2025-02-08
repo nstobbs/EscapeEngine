@@ -95,14 +95,16 @@ void RenderSystem::update()
 
     /* For Each Entity We Bind the Graphics Pipeline Set from it shaderComponent */
     for (Entity ent : m_renderableEntities)
-    {
+    {    
+        ShaderComponent shader = m_scene->m_ShaderComponents.at(ent);
         /* Update the Uniform Buffer For the Object We are Currently Rendering*/
         TransformComponent modelTransforms = m_scene->m_TransformComponents.at(ent);
-        updateUniformBuffer(m_context, m_scene, modelTransforms);
+        updateUniformBuffer(m_context, m_scene, modelTransforms); // TODO NEED TO UPDATE HOW WE UPDATE UNIFORM BUFFER DATA!!
         /* Get the ShaderID for this Entity */
         uint32_t shaderID = (m_scene->m_ShaderComponents.at(ent).ID);
         vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],
-                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID-1]);
+                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines[shaderID-1]); //TODO should be using entities here instead of these shader id.
+        //TODO shader id was a bad idea! remove it 
 
         vkCmdBindVertexBuffers(m_context.commandBuffers[m_context.currentFrame],
                                  0, 1, vertexBuffers, offsets);
@@ -113,8 +115,9 @@ void RenderSystem::update()
                          0, 1, &viewport);
         vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
-        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayout, 0, 1,
-                            &m_context.descriptorSets[m_context.currentFrame], 0, nullptr);
+        // TODO Come back and check if this makes sense
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 0, 2,
+                            &m_context.descriptorSets.at(ent)[m_context.currentFrame], 0, nullptr);
 
         uint32_t meshID = m_scene->m_MeshComponents.at(ent).ID; // Doesn't seem needed 
         uint32_t firstIndex = m_scene->m_MeshComponents.at(ent).details.firstIndex;
@@ -129,7 +132,7 @@ void RenderSystem::update()
         };
 
         vkCmdPushConstants(m_context.commandBuffers[m_context.currentFrame], 
-                           m_context.pipelineLayout,
+                           m_context.pipelineLayouts.at(ent),
                            VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,
                            0,
                            sizeof(PushConstantTextureIndex),

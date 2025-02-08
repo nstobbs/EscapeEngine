@@ -45,16 +45,16 @@ VkImageView createImageView(vulkanContext& context, VkImage image, VkFormat form
 void createRenderPass(vulkanContext& context);
 VkFormat findDepthFormat(vulkanContext& context);
 VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-void createDescriptorSetLayout(vulkanContext& context);
-void createGraphicsPipelineLayout(vulkanContext& context);
-void createGraphicsPipeline(vulkanContext& context, std::string& fragmentPath, std::string& vertexPath);
+void createDescriptorSetLayout(vulkanContext& context, Scene* scene);
+void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene);
+void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent);
 void createCommandPool(vulkanContext& context);
 void createDepthResources(vulkanContext& context);
 void createFramebuffers(vulkanContext& context);
 void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInput); // Could move into vulkanBuffer.hpp
 void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput);
-void createUniformBuffer(vulkanContext& context); // TODO Instead of one UBO create one for each shaderComponent
-void createDescriptorPool(vulkanContext& context);
+void createUniformBuffer(vulkanContext& context, VkDeviceSize bufferSize); // TODO Instead of one UBO create one for each shaderComponent
+void createDescriptorPool(vulkanContext& context, Scene* scene);
 void createDescriptorSets(vulkanContext& context, Scene* scene);
 void createCommandBuffers(vulkanContext& context);
 void createSyncObjects(vulkanContext& context);
