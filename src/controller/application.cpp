@@ -23,6 +23,25 @@ void Application::startUp()
     createSwapChain(m_vulkanContext, m_window);
     createImageViews(m_vulkanContext);
     createRenderPass(m_vulkanContext);
+
+    createCommandPool(m_vulkanContext);
+
+    /* Texture Loading Happens Here - WIP */
+    /* This is bad to have two loops fix later*/
+    m_vulkanContext.textureCount = static_cast<uint32_t>(0);
+    for (auto& [entityID, textures] : m_Scene->m_TextureComponents)
+    {
+        for (auto& texture : textures)
+        {
+            m_vulkanContext.textureCount++;
+            uint32_t textureID = m_vulkanContext.textureCount;
+            texture.ID = textureID;
+            m_Scene->m_ShaderComponents.at(entityID).textureIDs.push_back(textureID);
+            createTextureImage(m_vulkanContext,texture.texturePath);
+        };
+    };
+    createTextureImageView(m_vulkanContext);
+    createTextureSampler(m_vulkanContext);
     
     /* All ShaderComponents should be setup
     before creating the GraphicsPiplines */
@@ -39,25 +58,11 @@ void Application::startUp()
         createGraphicsPipeline(m_vulkanContext, m_Scene, entityID); 
     };
 
-    createCommandPool(m_vulkanContext);
+    
     createDepthResources(m_vulkanContext);
     createFramebuffers(m_vulkanContext);
 
-    // TODO MIGHT HAVE TO MOVE THIS....
-    /* Texture Loading Happens Here - WIP */
-    /* This is bad to have two loops fix later*/
-    for (auto& [entityID, textures] : m_Scene->m_TextureComponents)
-    {
-        for (auto& texture : textures)
-        {
-            m_vulkanContext.textureCount++;
-            uint32_t textureID = m_vulkanContext.textureCount;
-            m_Scene->m_ShaderComponents.at(entityID).textureIDs.push_back(textureID);
-            createTextureImage(m_vulkanContext,texture.texturePath);
-        };
-    };
-    createTextureImageView(m_vulkanContext);
-    createTextureSampler(m_vulkanContext);
+  
 
     /* All MeshComponents should be setup
     before creating the VertexBuffers */

@@ -494,7 +494,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             VkDescriptorSetLayoutBinding samplerBindings{};
             samplerBindings.binding = 2;
             samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-            samplerBindings.descriptorCount = 1;
+            samplerBindings.descriptorCount = 0;
             samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             samplerBindings.pImmutableSamplers = &context.textureSampler;
             bindings.push_back(samplerBindings);
@@ -863,7 +863,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     /* Texture Loading Happens Here */
     VkDescriptorPoolSize textureSamplerPoolSize{};
     textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // Not doing this way anymore
-    textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    textureSamplerPoolSize.descriptorCount = 1;
     poolSize.push_back(textureSamplerPoolSize);
 
     /* Texture Images Sorted out here*/
@@ -874,7 +874,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
         {
             VkDescriptorPoolSize texturePoolSize{};
             texturePoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            texturePoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+            texturePoolSize.descriptorCount = static_cast<uint32_t>(context.uniformBuffersCount * MAX_FRAMES_IN_FLIGHT);
             poolSize.push_back(texturePoolSize);
         } 
    }
@@ -883,7 +883,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
     poolInfo.pPoolSizes = poolSize.data();
-    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = static_cast<uint32_t>(context.uniformBuffersCount * MAX_FRAMES_IN_FLIGHT);
 
     if (vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool) != VK_SUCCESS)
     {
@@ -900,16 +900,19 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
             ShaderComponent shader = scene->m_ShaderComponents.at(ent);
-
-            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, context.descriptorSetLayouts.at(ent));
+            uint32_t descriptorCount = MAX_FRAMES_IN_FLIGHT * context.uniformBuffersCount;
+            std::vector<VkDescriptorSetLayout> layouts(descriptorCount, context.descriptorSetLayouts.at(ent));
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = context.descriptorPool;
-            allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); // double check this as well 
+            allocInfo.descriptorSetCount = static_cast<uint32_t>(descriptorCount); // double check this as well 
             allocInfo.pSetLayouts = layouts.data();
             
-            context.descriptorSets.at(ent).resize(MAX_FRAMES_IN_FLIGHT);
+            // seems dumb, it was! still it :)
+            std::vector<VkDescriptorSet> shaderDescriptorSets;
+            shaderDescriptorSets.resize(descriptorCount);
+            context.descriptorSets[ent] = shaderDescriptorSets;
             if (vkAllocateDescriptorSets(context.device, &allocInfo, context.descriptorSets.at(ent).data()))
             {
                 throw std::runtime_error("{ERROR} FAILED TO ALLOCATE DESCRIPTOR SETS!");
@@ -949,16 +952,23 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 objectWriteSet.pBufferInfo = &objectBufferInfo;
                 setWrites.push_back(objectWriteSet);
 
+                //TODO this could be better
                 std::vector<VkDescriptorImageInfo> imageInfos;
                 uint32_t imageCount = 0;
-                for (auto& texture : shader.textureIDs)
+                for (auto& ent : scene->m_Entities)
                 {
-                    imageCount++;
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.imageView = context.textureImageViews[texture]; // TODO double check 
-                    imageInfo.sampler = context.textureSampler;
-                    imageInfos.push_back(imageInfo);
+                    if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end())
+                    {
+                        for (auto& texture : scene->m_TextureComponents.at(ent))
+                        {
+                            imageCount++;
+                            VkDescriptorImageInfo imageInfo{};
+                            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                            imageInfo.imageView = context.textureImageViews[texture.ID - 1]; // TODO HOT TRASH!! 
+                            imageInfo.sampler = context.textureSampler;
+                            imageInfos.push_back(imageInfo);
+                        }
+                    }
                 }
 
                 VkWriteDescriptorSet texturesWriteSet{};
@@ -967,6 +977,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 texturesWriteSet.descriptorCount = imageCount;
                 texturesWriteSet.pImageInfo = imageInfos.data(); 
                 texturesWriteSet.dstBinding = 2;
+                texturesWriteSet.dstSet = context.descriptorSets.at(ent).at(i+2); //TODO missing something here maybe ????
                 setWrites.push_back(texturesWriteSet);
 
                 vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);
