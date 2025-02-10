@@ -135,9 +135,12 @@ void Application::tearDown()
     };
 
     vkDestroyDescriptorPool(m_vulkanContext.device, m_vulkanContext.descriptorPool, nullptr);
-    for (auto& [ent, descriptorSetLayout] : m_vulkanContext.descriptorSetLayouts)
+    for (auto& [ent, descriptorSetLayouts] : m_vulkanContext.descriptorSetLayoutsLists)
     {
-        vkDestroyDescriptorSetLayout(m_vulkanContext.device, descriptorSetLayout, nullptr);
+        for (auto& descriptorSetLayout : descriptorSetLayouts)
+        {
+             vkDestroyDescriptorSetLayout(m_vulkanContext.device, descriptorSetLayout, nullptr);
+        }
     };
 
     vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.indexBuffer, nullptr);

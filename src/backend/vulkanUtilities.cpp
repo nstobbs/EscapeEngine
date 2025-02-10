@@ -1,10 +1,13 @@
 #include "vulkanUtilities.hpp"
 
-void checkVulkanResult(VkResult result)
+void ASSERT_VK_RESULT(VkResult result, VkResult expected, std::string msg)
 {
-    if (result != VK_SUCCESS)
+    if (result != expected)
     {
-        throw std::runtime_error("{ERROR} Vulkan Function failed.");
+        std::string stringExpected(string_VkResult(expected));
+        std::string stringResult(string_VkResult(result));
+        std::cout << "{ERROR} EXPECTED: " << stringExpected << "GOT: " << stringResult << '\n';
+        throw std::runtime_error(msg);
     }
 };
 

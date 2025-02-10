@@ -3,9 +3,10 @@
 
 #include "../config.hpp"
 
+#include <vulkan/vk_enum_string_helper.h>
 #include "vulkanContext.hpp"
 
-void checkVulkanResult(VkResult result);
+void ASSERT_VK_RESULT(VkResult result, VkResult expected, std::string msg);
 VkVertexInputBindingDescription getBindingDescription();
 std::array<VkVertexInputAttributeDescription, 1> getAttributeDescriptions();
 VkCommandBuffer beginSingleTimeCommands(vulkanContext& context);

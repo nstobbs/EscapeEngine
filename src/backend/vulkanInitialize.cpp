@@ -481,26 +481,70 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             sceneBufferBinding.descriptorCount = 1; //?? TODO check this
             sceneBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             sceneBufferBinding.pImmutableSamplers = nullptr;
-            bindings.push_back(sceneBufferBinding);
 
             VkDescriptorSetLayoutBinding objectBufferBinding{};
-            objectBufferBinding.binding = 1; //TODO check this as well
+            objectBufferBinding.binding = 0; //TODO check this as well
             objectBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             objectBufferBinding.descriptorCount = 1;
             objectBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             objectBufferBinding.pImmutableSamplers = nullptr;
-            bindings.push_back(objectBufferBinding);
+
+            VkSampler samplers[1] = {context.textureSampler};
 
             VkDescriptorSetLayoutBinding samplerBindings{};
-            samplerBindings.binding = 2;
+            samplerBindings.binding = 0;
             samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-            samplerBindings.descriptorCount = 0;
+            samplerBindings.descriptorCount = 1;
             samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-            samplerBindings.pImmutableSamplers = &context.textureSampler;
-            bindings.push_back(samplerBindings);
+            samplerBindings.pImmutableSamplers = samplers;
+            
+            // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/DescriptorSets.1pp.pdf
+            // TODO need to create more that one descriptor sets 
+            // SceneLayout set + Include the Sampler Here too
+
+            /* Set == 0*/
+            std::vector<VkDescriptorSetLayout> layout;
+
+            VkDescriptorSetLayout sceneDescriptorLayout;
+            std::vector<VkDescriptorSetLayoutBinding> sceneBindings;
+            sceneBindings.push_back(sceneBufferBinding);
+            sceneBindings.push_back(samplerBindings);
+
+            VkDescriptorSetLayoutCreateInfo sceneDescriptorLayoutInfo{};
+            sceneDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            sceneDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(sceneBindings.size());
+            sceneDescriptorLayoutInfo.pBindings = sceneBindings.data();
+
+            ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &sceneDescriptorLayoutInfo, nullptr, &sceneDescriptorLayout), VK_SUCCESS, "Scene Descriptor Set");
+            layout.push_back(sceneDescriptorLayout);
+
+            // ObjectLayout set
+            /* Set == 1*/
+            VkDescriptorSetLayout objectDescriptorLayout;
+            std::vector<VkDescriptorSetLayoutBinding> objectBindings;
+            objectBindings.push_back(objectBufferBinding);
+
+            VkDescriptorSetLayoutCreateInfo objectDescriptorLayoutInfo{};
+            objectDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            objectDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(objectBindings.size());
+            objectDescriptorLayoutInfo.pBindings = objectBindings.data();
+
+            ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &objectDescriptorLayoutInfo, nullptr, &objectDescriptorLayout), VK_SUCCESS, "Object Descriptor Set");
+            layout.push_back(objectDescriptorLayout);
+
+            // TextureLayout set 
+            /* Set == 2*/
+            VkDescriptorSetLayout textureDescriptorLayout;
+            std::vector<VkDescriptorSetLayoutBinding> textureBindings;
+            //textureBindings.push_back();
+
+            VkDescriptorSetLayoutCreateInfo textureDescriptorLayoutInfo{};
+            textureDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            textureDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(textureBindings.size());
+            textureDescriptorLayoutInfo.pBindings = textureBindings.data();
 
             // Find every texture and create an sampled image for it.
-            // Can look into texture Arrays in the furture.
+            // Can look into texture Arrays in the future.
             if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end())
             {
                 uint32_t texCount = 0;
@@ -508,27 +552,22 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
                 {
                     texCount++;
                     VkDescriptorSetLayoutBinding imageBindings{};
-                    imageBindings.binding = 2 + texCount;
+                    imageBindings.binding = texCount;
                     imageBindings.descriptorCount = 1;
                     imageBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                    imageBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+                    imageBindings.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                     imageBindings.pImmutableSamplers = &context.textureSampler; //TODO double chcek this??
-                    bindings.push_back(imageBindings);
-                }
-            }
-
-            VkDescriptorSetLayoutCreateInfo layoutInfo{};
-            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-            layoutInfo.pBindings = bindings.data();
-
-            VkDescriptorSetLayout layout;
-
-            if (vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &layout) != VK_SUCCESS)
-            {
-                throw std::runtime_error("{ERROR} FAILED TO CREATE DESCIRPTOR SET!");
+                    textureBindings.push_back(imageBindings);
+                };
             };
-            context.descriptorSetLayouts[ent] = layout;
+            
+            if (textureBindings.size() != 0)
+            {
+                ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &textureDescriptorLayoutInfo, nullptr, &textureDescriptorLayout), VK_SUCCESS, "Texture Descriptor Set");
+                layout.push_back(textureDescriptorLayout);
+            };
+
+            context.descriptorSetLayoutsLists[ent] = layout;
         }
     }
 };
@@ -549,17 +588,15 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             and count how many we have*/
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo.setLayoutCount = 1;
-            pipelineLayoutInfo.pSetLayouts = &context.descriptorSetLayouts.at(ent); // TODO UPDATE TO CREATE UNIQUE FOR EACH SHADER
+            pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(context.descriptorSetLayoutsLists.at(ent).size());
+            pipelineLayoutInfo.pSetLayouts = &context.descriptorSetLayoutsLists.at(ent)[0]; // TODO UPDATE TO CREATE UNIQUE FOR EACH SHADER
             pipelineLayoutInfo.pushConstantRangeCount = 1;
             pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+            //pipelineLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV; //TODO TRYING OUT
             
             /*This will need to be unique  for each entity */
             VkPipelineLayout pipelineLayout;
-            if (vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-            {
-                throw std::runtime_error("{ERROR} FAILED TO CREATE PIPELINE LAYOUT.");
-            };
+            ASSERT_VK_RESULT(vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout), VK_SUCCESS, "Graphics Pipeline Layout");
             context.pipelineLayouts[ent] = pipelineLayout;
         }
     }
@@ -891,7 +928,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     };
 };
 
-// TODO this whole function needs rewriting
+// TODO this whole function needs rewriting, I NEED TO DO THIS AGAIN !!!!
 // Not sure if the descriptor pool is big enough to allow us to bind all of this.
 void createDescriptorSets(vulkanContext& context, Scene* scene)
 {
