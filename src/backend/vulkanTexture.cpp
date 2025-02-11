@@ -80,11 +80,9 @@ void createTextureSampler(vulkanContext& context)
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-  
-    VkSampler textureSampler;
-    if (vkCreateSampler(context.device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE TEXTURE SAMPLER.");
-    };
+    VkSampler tempTextureSampler;
+    auto result = vkCreateSampler(context.device, &samplerInfo, nullptr, &tempTextureSampler);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Texture Sampler");
 
+    context.textureSampler = tempTextureSampler;
 };

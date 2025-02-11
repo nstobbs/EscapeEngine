@@ -97,8 +97,8 @@ void Application::startUp()
 
     /* Uniform Buffers and Textures */
     //createUniformBuffer(m_vulkanContext, sizeof(UniformBufferObject)); // OLD
-    createUniformBuffer(m_vulkanContext, sizeof(SceneUniformBuffer));
-    createUniformBuffer(m_vulkanContext, sizeof(ObjectUniformBuffer));
+    createUniformBuffer(m_vulkanContext, sceneType, sizeof(SceneUniformBuffer));
+    createUniformBuffer(m_vulkanContext, objectType, sizeof(ObjectUniformBuffer));
     createDescriptorPool(m_vulkanContext, m_Scene);
     createDescriptorSets(m_vulkanContext, m_Scene);
 
@@ -118,7 +118,7 @@ void Application::loop()
         glfwPollEvents();
         /* System Updates Happen Here*/
         RSystem.update();
-        //CSystem.update(); // crash when it's placed before the rendersystem ??
+        CSystem.update(); // crash when it's placed before the rendersystem ??
     }
 };
 
@@ -130,8 +130,10 @@ void Application::tearDown()
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.uniformBuffers[i], nullptr);
-        vkFreeMemory(m_vulkanContext.device, m_vulkanContext.uniformBuffersMemory[i], nullptr);
+        vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.uniformBuffers.at(sceneType)[i], nullptr);
+        vkFreeMemory(m_vulkanContext.device, m_vulkanContext.uniformBuffersMemory.at(sceneType)[i], nullptr);
+        vkDestroyBuffer(m_vulkanContext.device, m_vulkanContext.uniformBuffers.at(objectType)[i], nullptr);
+        vkFreeMemory(m_vulkanContext.device, m_vulkanContext.uniformBuffersMemory.at(objectType)[i], nullptr);
     };
 
     vkDestroyDescriptorPool(m_vulkanContext.device, m_vulkanContext.descriptorPool, nullptr);

@@ -3,12 +3,19 @@
 
 #include "../config.hpp"
 #include "../entity/entity.hpp"
-
 /*
 vulkanContext.hpp
 Struct that holds all of the vulkan related
 objects for our applications to function. 
 */
+
+// TODO: I don't like this name, it's not really data type but different uniform  
+// TODO Shouldn't be here really
+enum uniformLayout 
+{
+    sceneType,
+    objectType
+};
 
 struct vulkanContext
 {
@@ -70,10 +77,9 @@ struct vulkanContext
         
     /* Uniform Buffer Related*/
     uint32_t uniformBuffersCount = 0;
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*> uniformBufferMapped;
-
+    std::unordered_map<uniformLayout, std::vector<VkBuffer>> uniformBuffers;
+    std::unordered_map<uniformLayout, std::vector<VkDeviceMemory>> uniformBuffersMemory;
+    std::unordered_map<uniformLayout, std::vector<void*>> uniformBufferMapped;
 
     /* Descriptor Sets Related */
     VkDescriptorPool descriptorPool;

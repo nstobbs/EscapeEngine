@@ -6,7 +6,7 @@ void ASSERT_VK_RESULT(VkResult result, VkResult expected, std::string msg)
     {
         std::string stringExpected(string_VkResult(expected));
         std::string stringResult(string_VkResult(result));
-        std::cout << "{ERROR} EXPECTED: " << stringExpected << "GOT: " << stringResult << '\n';
+        std::cout << "{ERROR} EXPECTED: " << stringExpected << " GOT: " << stringResult << " Message: ";
         throw std::runtime_error(msg);
     }
 };

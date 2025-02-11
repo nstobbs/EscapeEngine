@@ -474,7 +474,8 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
         {
             std::vector<VkDescriptorSetLayoutBinding> bindings;
             ShaderComponent currentShader = scene->m_ShaderComponents.at(ent);
-
+            
+            /* Scene UBO with Texture Sampler  DescriptorSetLayout 0 */
             VkDescriptorSetLayoutBinding sceneBufferBinding{};
             sceneBufferBinding.binding = 0;
             sceneBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -482,21 +483,21 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             sceneBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             sceneBufferBinding.pImmutableSamplers = nullptr;
 
+            VkSampler samplers[1] = {context.textureSampler};
+            VkDescriptorSetLayoutBinding samplerBindings{};
+            samplerBindings.binding = 1;
+            samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+            samplerBindings.descriptorCount = 1;
+            samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            samplerBindings.pImmutableSamplers = samplers;
+
+            /* Object UBO DescriptorSetLayout 1 */
             VkDescriptorSetLayoutBinding objectBufferBinding{};
             objectBufferBinding.binding = 0; //TODO check this as well
             objectBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             objectBufferBinding.descriptorCount = 1;
             objectBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             objectBufferBinding.pImmutableSamplers = nullptr;
-
-            VkSampler samplers[1] = {context.textureSampler};
-
-            VkDescriptorSetLayoutBinding samplerBindings{};
-            samplerBindings.binding = 0;
-            samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-            samplerBindings.descriptorCount = 1;
-            samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-            samplerBindings.pImmutableSamplers = samplers;
             
             // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/DescriptorSets.1pp.pdf
             // TODO need to create more that one descriptor sets 
@@ -536,12 +537,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             /* Set == 2*/
             VkDescriptorSetLayout textureDescriptorLayout;
             std::vector<VkDescriptorSetLayoutBinding> textureBindings;
-            //textureBindings.push_back();
-
-            VkDescriptorSetLayoutCreateInfo textureDescriptorLayoutInfo{};
-            textureDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            textureDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(textureBindings.size());
-            textureDescriptorLayoutInfo.pBindings = textureBindings.data();
+            /* Texture  DescriptorSetLayout 1 */
 
             // Find every texture and create an sampled image for it.
             // Can look into texture Arrays in the future.
@@ -560,6 +556,11 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
                     textureBindings.push_back(imageBindings);
                 };
             };
+
+            VkDescriptorSetLayoutCreateInfo textureDescriptorLayoutInfo{};
+            textureDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            textureDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(textureBindings.size());
+            textureDescriptorLayoutInfo.pBindings = textureBindings.data();
             
             if (textureBindings.size() != 0)
             {
@@ -589,7 +590,7 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(context.descriptorSetLayoutsLists.at(ent).size());
-            pipelineLayoutInfo.pSetLayouts = &context.descriptorSetLayoutsLists.at(ent)[0]; // TODO UPDATE TO CREATE UNIQUE FOR EACH SHADER
+            pipelineLayoutInfo.pSetLayouts = context.descriptorSetLayoutsLists.at(ent).data(); // TODO double check later
             pipelineLayoutInfo.pushConstantRangeCount = 1;
             pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
             //pipelineLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV; //TODO TRYING OUT
@@ -862,15 +863,12 @@ void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInp
 };
 
 /* Should be in vulkanBuffer.hpp seems pretty random being here?*/
-/* This is just the Uniform Buffer for the MVP.
-    We create a space in GPU memory for that the GPU and CPU can see.
-    Here called uniformBuffersMapped. Later in the update function.
-    We will create the data we want on the CPU then copy it to the 
-    GPU, so that we can use those values in the shader.*/
-void createUniformBuffer(vulkanContext& context, VkDeviceSize bufferSize)
+void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceSize bufferSize)
 {
-    context.uniformBuffersCount++;
-
+    std::vector<VkBuffer> buffers;
+    std::vector<VkDeviceMemory> bufferMemorys;
+    std::vector<void*> bufferMappings;
+   
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkBuffer buffer;
@@ -881,26 +879,45 @@ void createUniformBuffer(vulkanContext& context, VkDeviceSize bufferSize)
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                      buffer, bufferMemory);
         vkMapMemory(context.device, bufferMemory, 0, bufferSize, 0, &bufferMapping);
-        
-        context.uniformBuffers.push_back(buffer);
-        context.uniformBuffersMemory.push_back(bufferMemory);
-        context.uniformBufferMapped.push_back(bufferMapping);
+
+        buffers.push_back(buffer);
+        bufferMemorys.push_back(bufferMemory);
+        bufferMappings.push_back(bufferMapping);
     };
+
+    if (layout == sceneType)
+    {
+        context.uniformBuffers[sceneType] = buffers;
+        context.uniformBuffersMemory[sceneType] = bufferMemorys;
+        context.uniformBufferMapped[sceneType] = bufferMappings;
+    } 
+    else if (layout  == objectType)
+    {
+        context.uniformBuffers[objectType] = buffers;
+        context.uniformBuffersMemory[objectType] = bufferMemorys;
+        context.uniformBufferMapped[objectType] = bufferMappings;
+    }
 };
 
 void createDescriptorPool(vulkanContext& context, Scene* scene)
 {
+    int extraSpace = 10; 
+
     std::vector<VkDescriptorPoolSize> poolSize{};
 
-    VkDescriptorPoolSize uniformBuffersPoolSize{};
-    uniformBuffersPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uniformBuffersPoolSize.descriptorCount = static_cast<uint32_t>(context.uniformBuffersCount * MAX_FRAMES_IN_FLIGHT);
-    poolSize.push_back(uniformBuffersPoolSize);
+    VkDescriptorPoolSize sceneBufferPoolSize{};
+    sceneBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    sceneBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
+    poolSize.push_back(sceneBufferPoolSize);
+
+    VkDescriptorPoolSize objectBufferPoolSize{};
+    objectBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    objectBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
+    poolSize.push_back(sceneBufferPoolSize);
     
-    /* Texture Loading Happens Here */
     VkDescriptorPoolSize textureSamplerPoolSize{};
-    textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // Not doing this way anymore
-    textureSamplerPoolSize.descriptorCount = 1;
+    textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
     poolSize.push_back(textureSamplerPoolSize);
 
     /* Texture Images Sorted out here*/
@@ -911,7 +928,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
         {
             VkDescriptorPoolSize texturePoolSize{};
             texturePoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            texturePoolSize.descriptorCount = static_cast<uint32_t>(context.uniformBuffersCount * MAX_FRAMES_IN_FLIGHT);
+            texturePoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
             poolSize.push_back(texturePoolSize);
         } 
    }
@@ -920,15 +937,12 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
     poolInfo.pPoolSizes = poolSize.data();
-    poolInfo.maxSets = static_cast<uint32_t>(context.uniformBuffersCount * MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
 
-    if (vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE DESCRIPTOR POOL.");
-    };
+    auto result = vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Descriptor Pool");
 };
 
-// TODO this whole function needs rewriting, I NEED TO DO THIS AGAIN !!!!
 // Not sure if the descriptor pool is big enough to allow us to bind all of this.
 void createDescriptorSets(vulkanContext& context, Scene* scene)
 {
@@ -937,59 +951,66 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
             ShaderComponent shader = scene->m_ShaderComponents.at(ent);
-            uint32_t descriptorCount = MAX_FRAMES_IN_FLIGHT * context.uniformBuffersCount;
-            std::vector<VkDescriptorSetLayout> layouts(descriptorCount, context.descriptorSetLayouts.at(ent));
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = context.descriptorPool;
-            allocInfo.descriptorSetCount = static_cast<uint32_t>(descriptorCount); // double check this as well 
-            allocInfo.pSetLayouts = layouts.data();
-            
-            // seems dumb, it was! still it :)
-            std::vector<VkDescriptorSet> shaderDescriptorSets;
-            shaderDescriptorSets.resize(descriptorCount);
-            context.descriptorSets[ent] = shaderDescriptorSets;
-            if (vkAllocateDescriptorSets(context.device, &allocInfo, context.descriptorSets.at(ent).data()))
-            {
-                throw std::runtime_error("{ERROR} FAILED TO ALLOCATE DESCRIPTOR SETS!");
-            };
+            allocInfo.descriptorSetCount = static_cast<uint32_t>(context.descriptorSetLayoutsLists.at(ent).size()); // double check this as well 
+            allocInfo.pSetLayouts = context.descriptorSetLayoutsLists.at(ent).data();
 
+            // TODO NOT SURE IF THIS IS RIGHT 
+            std::vector<VkDescriptorSet> tempDescriptorSet;
+            for (int i = 0; i < 4; i++)
+            {
+                VkDescriptorSet temp;
+                tempDescriptorSet.push_back(temp);
+            }
+
+            auto result = vkAllocateDescriptorSets(context.device, &allocInfo, &tempDescriptorSet[0]);
+            ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets");
+            context.descriptorSets[ent] = tempDescriptorSet;
+
+            // TODO YEAH IM A LITTLE STUCK HERE !!!!
+            
+            // Create Descriptor Buffer Info Per Binding*
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
+                // SceneBufferInfo
                 VkDescriptorBufferInfo sceneBufferInfo{};
-                sceneBufferInfo.buffer = context.uniformBuffers.at(i);
-                sceneBufferInfo.offset = 0; // TODO double check this ??
+                sceneBufferInfo.buffer = context.uniformBuffers.at(sceneType)[i]; 
+                sceneBufferInfo.offset = 0; 
                 sceneBufferInfo.range = sizeof(SceneUniformBuffer);
 
+                // ObjectBufferInfo
                 VkDescriptorBufferInfo objectBufferInfo{};
-                objectBufferInfo.buffer = context.uniformBuffers.at(i+2); // TODO i really dont like doing this, seems really wrong
+                objectBufferInfo.buffer = context.uniformBuffers.at(objectType)[i];
                 objectBufferInfo.offset = 0;
                 objectBufferInfo.range = sizeof(ObjectUniformBuffer);
 
+                // Create Write Descriptor Set 
                 std::vector<VkWriteDescriptorSet> setWrites;
 
+                // SceneWriteInfo
                 VkWriteDescriptorSet sceneWriteSet{};
                 sceneWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 sceneWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                sceneWriteSet.descriptorCount = 1;
-                sceneWriteSet.dstSet = context.descriptorSets.at(ent).at(i); // TODO double check this ??
+                sceneWriteSet.descriptorCount = 2; // TODO not sure ???
+                sceneWriteSet.dstSet = context.descriptorSets.at(ent)[0]; // TODO double check this ??
                 sceneWriteSet.dstBinding = 0;
                 sceneWriteSet.dstArrayElement = 0;
                 sceneWriteSet.pBufferInfo = &sceneBufferInfo;
-                setWrites.push_back(sceneWriteSet);
 
+                // ObjectWriteInfo
                 VkWriteDescriptorSet objectWriteSet{};
                 objectWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 objectWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                objectWriteSet.descriptorCount = 1; //TODO double check this 
-                objectWriteSet.dstSet = context.descriptorSets.at(ent).at(i+2); // TODO i really dont like doing this, seems really wrong
-                objectWriteSet.dstBinding = 1;
+                objectWriteSet.descriptorCount = 1;
+                objectWriteSet.dstSet = context.descriptorSets.at(ent)[1]; // TODO i really dont like doing this, seems really wrong
+                objectWriteSet.dstBinding = 0;
                 objectWriteSet.dstArrayElement = 0;
                 objectWriteSet.pBufferInfo = &objectBufferInfo;
-                setWrites.push_back(objectWriteSet);
 
-                //TODO this could be better
+                //  ImageInfo for each Texture
                 std::vector<VkDescriptorImageInfo> imageInfos;
                 uint32_t imageCount = 0;
                 for (auto& ent : scene->m_Entities)
@@ -1007,18 +1028,20 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                         }
                     }
                 }
-
+                // TextureWriteInfo
                 VkWriteDescriptorSet texturesWriteSet{};
                 texturesWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 texturesWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                 texturesWriteSet.descriptorCount = imageCount;
                 texturesWriteSet.pImageInfo = imageInfos.data(); 
                 texturesWriteSet.dstBinding = 2;
-                texturesWriteSet.dstSet = context.descriptorSets.at(ent).at(i+2); //TODO missing something here maybe ????
-                setWrites.push_back(texturesWriteSet);
+                texturesWriteSet.dstSet = context.descriptorSets.at(ent)[2];
 
-                vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);
-            }
+                // Update Descriptor Sets x4
+                vkUpdateDescriptorSets(context.device, 1, &sceneWriteSet, 0, nullptr);
+                vkUpdateDescriptorSets(context.device, 1, &objectWriteSet, 0, nullptr);
+                vkUpdateDescriptorSets(context.device, 1, &texturesWriteSet, 0, nullptr);
+            };
         }
     }
 };
