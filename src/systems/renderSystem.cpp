@@ -99,12 +99,11 @@ void RenderSystem::update()
         ShaderComponent shader = m_scene->m_ShaderComponents.at(ent);
         /* Update the Uniform Buffer For the Object We are Currently Rendering*/
         TransformComponent modelTransforms = m_scene->m_TransformComponents.at(ent);
-        updateUniformBuffer(m_context, m_scene, modelTransforms); // TODO NEED TO UPDATE HOW WE UPDATE UNIFORM BUFFER DATA!!
+        updateUniformBuffer(m_context, m_scene, modelTransforms); 
         /* Get the ShaderID for this Entity */
         uint32_t shaderID = (m_scene->m_ShaderComponents.at(ent).ID);
         vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],
                          VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines.at(ent));
-        //TODO shader id was a bad idea! remove it 
 
         vkCmdBindVertexBuffers(m_context.commandBuffers[m_context.currentFrame],
                                  0, 1, vertexBuffers, offsets);
