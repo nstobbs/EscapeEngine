@@ -493,7 +493,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 
             /* Object UBO DescriptorSetLayout 1 */
             VkDescriptorSetLayoutBinding objectBufferBinding{};
-            objectBufferBinding.binding = 0; //TODO check this as well
+            objectBufferBinding.binding = 0;
             objectBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             objectBufferBinding.descriptorCount = 1;
             objectBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -901,7 +901,7 @@ void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceS
 
 void createDescriptorPool(vulkanContext& context, Scene* scene)
 {
-    int extraSpace = 10; 
+    int extraSpace = 2; 
 
     std::vector<VkDescriptorPoolSize> poolSize{};
 
@@ -916,7 +916,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolSize.push_back(sceneBufferPoolSize);
     
     VkDescriptorPoolSize textureSamplerPoolSize{};
-    textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLER;
     textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
     poolSize.push_back(textureSamplerPoolSize);
 
@@ -943,7 +943,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Descriptor Pool");
 };
 
-// Not sure if the descriptor pool is big enough to allow us to bind all of this.
+
 void createDescriptorSets(vulkanContext& context, Scene* scene)
 {
     for (auto& ent : scene->m_Entities)
@@ -959,12 +959,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
             allocInfo.pSetLayouts = context.descriptorSetLayoutsLists.at(ent).data();
 
             // TODO NOT SURE IF THIS IS RIGHT 
-            std::vector<VkDescriptorSet> tempDescriptorSet;
-            for (int i = 0; i < 4; i++)
-            {
-                VkDescriptorSet temp;
-                tempDescriptorSet.push_back(temp);
-            }
+            std::vector<VkDescriptorSet> tempDescriptorSet(MAX_FRAMES_IN_FLIGHT * 2);
 
             auto result = vkAllocateDescriptorSets(context.device, &allocInfo, &tempDescriptorSet[0]);
             ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets");
@@ -994,11 +989,21 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 VkWriteDescriptorSet sceneWriteSet{};
                 sceneWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 sceneWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                sceneWriteSet.descriptorCount = 2; // TODO not sure ???
+                sceneWriteSet.descriptorCount = 1; // TODO not sure ???
                 sceneWriteSet.dstSet = context.descriptorSets.at(ent)[0]; // TODO double check this ??
                 sceneWriteSet.dstBinding = 0;
                 sceneWriteSet.dstArrayElement = 0;
                 sceneWriteSet.pBufferInfo = &sceneBufferInfo;
+                setWrites.push_back(sceneWriteSet);
+
+                VkWriteDescriptorSet textureSamplerWriteSet{};
+                textureSamplerWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                textureSamplerWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                textureSamplerWriteSet.descriptorCount = 1;
+                textureSamplerWriteSet.dstSet = context.descriptorSets.at(ent)[0];
+                textureSamplerWriteSet.dstBinding = 1;
+                textureSamplerWriteSet.dstArrayElement = 0;
+                setWrites.push_back(textureSamplerWriteSet);
 
                 // ObjectWriteInfo
                 VkWriteDescriptorSet objectWriteSet{};
@@ -1037,8 +1042,8 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 texturesWriteSet.dstBinding = 2;
                 texturesWriteSet.dstSet = context.descriptorSets.at(ent)[2];
 
-                // Update Descriptor Sets x4
-                vkUpdateDescriptorSets(context.device, 1, &sceneWriteSet, 0, nullptr);
+                // Update Descriptor Sets x3
+                vkUpdateDescriptorSets(context.device, 2, setWrites.data(), 0, nullptr);
                 vkUpdateDescriptorSets(context.device, 1, &objectWriteSet, 0, nullptr);
                 vkUpdateDescriptorSets(context.device, 1, &texturesWriteSet, 0, nullptr);
             };
