@@ -1,18 +1,29 @@
 #version 450 core
-
+// inputs
 layout(location = 0) in vec2 fragTexCoord;
-layout(set = 0, binding = 0) uniform sampler2D textures[2048];
 
-layout(push_constant) uniform PER_OBJECT
-{
+// uniforms
+layout(set = 0, binding = 0) uniform SceneUniformBuffer {
+    mat4 view;
+    mat4 proj;
+} sceneData;
+
+layout(set = 1, binding = 0) uniform ObjectUniformBuffer {
+    mat4 model;
+} object;
+
+layout(set = 2, binding = 0) uniform sampler _sampler;
+
+layout(set = 2, binding = 1) uniform texture2D textures[1];
+
+layout(push_constant) uniform TextureIndexPush {
     int textureIndex;
-}texturePushConstant;
+}textureIndexPush;
 
+// out
 layout(location = 0) out vec4 outColor;
-
-// update to add support for texture arrays. please, i beg
 
 void main()
 {
-    outColor = texture(sampler2D(textures[texturePushConstant.textureIndex], sampler), fragTexCoord);
-};
+    outColor = texture(sampler2D(textures[textureIndexPush.textureIndex], _sampler), fragTexCoord);
+}

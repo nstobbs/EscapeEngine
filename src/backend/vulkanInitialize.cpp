@@ -483,14 +483,6 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             sceneBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             sceneBufferBinding.pImmutableSamplers = nullptr;
 
-            VkSampler samplers[1] = {context.textureSampler};
-            VkDescriptorSetLayoutBinding samplerBindings{};
-            samplerBindings.binding = 1;
-            samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-            samplerBindings.descriptorCount = 1;
-            samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-            samplerBindings.pImmutableSamplers = samplers;
-
             /* Object UBO DescriptorSetLayout 1 */
             VkDescriptorSetLayoutBinding objectBufferBinding{};
             objectBufferBinding.binding = 0;
@@ -509,7 +501,6 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             VkDescriptorSetLayout sceneDescriptorLayout;
             std::vector<VkDescriptorSetLayoutBinding> sceneBindings;
             sceneBindings.push_back(sceneBufferBinding);
-            sceneBindings.push_back(samplerBindings);
 
             VkDescriptorSetLayoutCreateInfo sceneDescriptorLayoutInfo{};
             sceneDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -533,44 +524,42 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &objectDescriptorLayoutInfo, nullptr, &objectDescriptorLayout), VK_SUCCESS, "Object Descriptor Set");
             layout.push_back(objectDescriptorLayout);
 
-            // TextureLayout set 
-            /* Set == 2*/
-            VkDescriptorSetLayout textureDescriptorLayout;
-            std::vector<VkDescriptorSetLayoutBinding> textureBindings;
-            /* Texture  DescriptorSetLayout 1 */
-
-            // Find every texture and create an sampled image for it.
-            // Can look into texture Arrays in the future.
-            if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end())
-            {
-                uint32_t texCount = 0;
-                for (auto& texture : scene->m_TextureComponents.at(ent))
-                {
-                    texCount++;
-                    VkDescriptorSetLayoutBinding imageBindings{};
-                    imageBindings.binding = texCount;
-                    imageBindings.descriptorCount = 1;
-                    imageBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                    imageBindings.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                    imageBindings.pImmutableSamplers = &context.textureSampler; //TODO double chcek this??
-                    textureBindings.push_back(imageBindings);
-                };
-            };
-
-            VkDescriptorSetLayoutCreateInfo textureDescriptorLayoutInfo{};
-            textureDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            textureDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(textureBindings.size());
-            textureDescriptorLayoutInfo.pBindings = textureBindings.data();
-            
-            if (textureBindings.size() != 0)
-            {
-                ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &textureDescriptorLayoutInfo, nullptr, &textureDescriptorLayout), VK_SUCCESS, "Texture Descriptor Set");
-                layout.push_back(textureDescriptorLayout);
-            };
-
             context.descriptorSetLayoutsLists[ent] = layout;
         }
     }
+    // TextureLayout set 
+    /* Set == 2*/
+    VkDescriptorSetLayout textureDescriptorLayout;
+    std::vector<VkDescriptorSetLayoutBinding> textureBindings;
+
+    VkDescriptorSetLayoutBinding samplerBindings{};
+    samplerBindings.binding = 0;
+    samplerBindings.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+    samplerBindings.descriptorCount = 1;
+    samplerBindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    samplerBindings.pImmutableSamplers = nullptr;
+    textureBindings.push_back(samplerBindings);
+
+    VkDescriptorSetLayoutBinding texturesBinding{};
+    texturesBinding.binding = 1;
+    texturesBinding.descriptorCount = context.textureCount;
+    texturesBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    texturesBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    texturesBinding.pImmutableSamplers = &context.textureSampler; //TODO Not sure if we need to have the sampler here? double check this 
+    textureBindings.push_back(texturesBinding);
+
+    /* Texture  DescriptorSetLayout 1 */
+    VkDescriptorSetLayoutCreateInfo textureDescriptorLayoutInfo{};
+    textureDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    textureDescriptorLayoutInfo.bindingCount = static_cast<uint32_t>(textureBindings.size());
+    textureDescriptorLayoutInfo.pBindings = textureBindings.data();
+    if (context.textureCount != 0)
+    {
+        ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &textureDescriptorLayoutInfo, nullptr, &textureDescriptorLayout), VK_SUCCESS, "Texture Descriptor Set");
+        context.textureDescriptorSetLayout = textureDescriptorLayout;
+    } else {
+        std::cout << "{INFO} No Textures to render!" << std::endl;
+    };
 };
 
 void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
@@ -580,19 +569,28 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
             /* Hopefully this wont be needed ever soon */
-            VkPushConstantRange  pushConstantRange{};
-            pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-            pushConstantRange.offset = 0;
-            pushConstantRange.size = sizeof(PushConstantTextureIndex);
+            VkPushConstantRange  textureIndexPushRange{};
+            textureIndexPushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            textureIndexPushRange.offset = 0;
+            textureIndexPushRange.size = sizeof(TextureIndexPush);
 
             /* Will need to points to all of the descriptor sets we want to use
             and count how many we have*/
+            std::vector<VkDescriptorSetLayout> tempLayout;
+            /* Entity */
+            for (auto layout : context.descriptorSetLayoutsLists.at(ent))
+            {
+                tempLayout.push_back(layout);
+            }
+             /* Globals */
+            tempLayout.push_back(context.textureDescriptorSetLayout); 
+            
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(context.descriptorSetLayoutsLists.at(ent).size());
-            pipelineLayoutInfo.pSetLayouts = context.descriptorSetLayoutsLists.at(ent).data(); // TODO double check later
+            pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(tempLayout.size());
+            pipelineLayoutInfo.pSetLayouts =tempLayout.data();
             pipelineLayoutInfo.pushConstantRangeCount = 1;
-            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+            pipelineLayoutInfo.pPushConstantRanges = &textureIndexPushRange;
             //pipelineLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV; //TODO TRYING OUT
             
             /*This will need to be unique  for each entity */
@@ -901,7 +899,7 @@ void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceS
 
 void createDescriptorPool(vulkanContext& context, Scene* scene)
 {
-    int extraSpace = 2; 
+    int extraSpace = 2; //TODO THIS IS JUST A WASTE OF RESOURCES, PLEASE REMOVE THIS 
 
     std::vector<VkDescriptorPoolSize> poolSize{};
 
@@ -920,18 +918,13 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
     poolSize.push_back(textureSamplerPoolSize);
 
-    /* Texture Images Sorted out here*/
-    // TODO Double check here, could be wrong
-   for (auto& ent : scene->m_Entities)
+   if (context.textureCount != 0)
    {
-        if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end()) // double check this
-        {
-            VkDescriptorPoolSize texturePoolSize{};
-            texturePoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            texturePoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
-            poolSize.push_back(texturePoolSize);
-        } 
-   }
+        VkDescriptorPoolSize texturesPoolSize{};
+        texturesPoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        texturesPoolSize.descriptorCount = static_cast<uint32_t>((MAX_FRAMES_IN_FLIGHT * context.textureCount) * extraSpace);
+        poolSize.push_back(texturesPoolSize);
+   };
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -952,20 +945,21 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         {
             ShaderComponent shader = scene->m_ShaderComponents.at(ent);
 
+            // TODO DONE THIS TWO TIMES NOW MAYBE CREATE A FUNCTION TO DO THIS FOR US
+            // AND BETTER
+
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = context.descriptorPool;
             allocInfo.descriptorSetCount = static_cast<uint32_t>(context.descriptorSetLayoutsLists.at(ent).size()); // double check this as well 
             allocInfo.pSetLayouts = context.descriptorSetLayoutsLists.at(ent).data();
 
-            // TODO NOT SURE IF THIS IS RIGHT 
-            std::vector<VkDescriptorSet> tempDescriptorSet(MAX_FRAMES_IN_FLIGHT * 2);
+            int descriptorSetCount = MAX_FRAMES_IN_FLIGHT * context.descriptorSetLayoutsLists.at(ent).size(); 
+            std::vector<VkDescriptorSet> tempDescriptorSets(descriptorSetCount);
 
-            auto result = vkAllocateDescriptorSets(context.device, &allocInfo, &tempDescriptorSet[0]);
+            auto result = vkAllocateDescriptorSets(context.device, &allocInfo, tempDescriptorSets.data());
             ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets");
-            context.descriptorSets[ent] = tempDescriptorSet;
-
-            // TODO YEAH IM A LITTLE STUCK HERE !!!!
+            context.descriptorSets[ent] = tempDescriptorSets;
             
             // Create Descriptor Buffer Info Per Binding*
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -983,27 +977,17 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 objectBufferInfo.range = sizeof(ObjectUniformBuffer);
 
                 // Create Write Descriptor Set 
-                std::vector<VkWriteDescriptorSet> setWrites;
+                std::vector<VkWriteDescriptorSet> descriptorSetWrites;
 
                 // SceneWriteInfo
                 VkWriteDescriptorSet sceneWriteSet{};
                 sceneWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 sceneWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                sceneWriteSet.descriptorCount = 1; // TODO not sure ???
+                sceneWriteSet.descriptorCount = 1;
                 sceneWriteSet.dstSet = context.descriptorSets.at(ent)[0]; // TODO double check this ??
                 sceneWriteSet.dstBinding = 0;
                 sceneWriteSet.dstArrayElement = 0;
                 sceneWriteSet.pBufferInfo = &sceneBufferInfo;
-                setWrites.push_back(sceneWriteSet);
-
-                VkWriteDescriptorSet textureSamplerWriteSet{};
-                textureSamplerWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                textureSamplerWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-                textureSamplerWriteSet.descriptorCount = 1;
-                textureSamplerWriteSet.dstSet = context.descriptorSets.at(ent)[0];
-                textureSamplerWriteSet.dstBinding = 1;
-                textureSamplerWriteSet.dstArrayElement = 0;
-                setWrites.push_back(textureSamplerWriteSet);
 
                 // ObjectWriteInfo
                 VkWriteDescriptorSet objectWriteSet{};
@@ -1015,40 +999,62 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 objectWriteSet.dstArrayElement = 0;
                 objectWriteSet.pBufferInfo = &objectBufferInfo;
 
-                //  ImageInfo for each Texture
-                std::vector<VkDescriptorImageInfo> imageInfos;
-                uint32_t imageCount = 0;
-                for (auto& ent : scene->m_Entities)
-                {
-                    if (scene->m_TextureComponents.find(ent) != scene->m_TextureComponents.end())
-                    {
-                        for (auto& texture : scene->m_TextureComponents.at(ent))
-                        {
-                            imageCount++;
-                            VkDescriptorImageInfo imageInfo{};
-                            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                            imageInfo.imageView = context.textureImageViews[texture.ID - 1]; // TODO HOT TRASH!! 
-                            imageInfo.sampler = context.textureSampler;
-                            imageInfos.push_back(imageInfo);
-                        }
-                    }
-                }
-                // TextureWriteInfo
-                VkWriteDescriptorSet texturesWriteSet{};
-                texturesWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                texturesWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                texturesWriteSet.descriptorCount = imageCount;
-                texturesWriteSet.pImageInfo = imageInfos.data(); 
-                texturesWriteSet.dstBinding = 2;
-                texturesWriteSet.dstSet = context.descriptorSets.at(ent)[2];
-
-                // Update Descriptor Sets x3
-                vkUpdateDescriptorSets(context.device, 2, setWrites.data(), 0, nullptr);
+                // Update Descriptor Sets x2
+                vkUpdateDescriptorSets(context.device, 1, &sceneWriteSet, 0, nullptr);
                 vkUpdateDescriptorSets(context.device, 1, &objectWriteSet, 0, nullptr);
-                vkUpdateDescriptorSets(context.device, 1, &texturesWriteSet, 0, nullptr);
             };
         }
     }
+
+    std::vector<VkDescriptorImageInfo> texturesImageInfos;
+    if (context.textureCount != 0)
+    {
+        for (auto& [ent, textures] : scene->m_TextureComponents)
+        {
+            for (auto& texture : textures)
+            {
+                VkDescriptorImageInfo textureImageInfo{};
+                textureImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                textureImageInfo.imageView = context.textureImageViews[texture.ID - 1]; //TODO it is what it is...
+                textureImageInfo.sampler = context.textureSampler;
+                texturesImageInfos.push_back(textureImageInfo);
+            };
+        };
+
+        VkDescriptorSetAllocateInfo textureAllocInfo{};
+        textureAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        textureAllocInfo.descriptorPool = context.descriptorPool;
+        textureAllocInfo.descriptorSetCount = 1;
+        textureAllocInfo.pSetLayouts = &context.textureDescriptorSetLayout;
+
+        auto result = vkAllocateDescriptorSets(context.device, &textureAllocInfo, &context.textureDescriptorSet);
+        ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets");
+        //context.descriptorSets[ent] = tempDescriptorSets;
+
+        std::vector<VkWriteDescriptorSet> texturesWriteSets{};
+        VkWriteDescriptorSet textureSamplerWriteSet{};
+        textureSamplerWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        textureSamplerWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+        textureSamplerWriteSet.descriptorCount = 1;
+        textureSamplerWriteSet.dstSet = context.textureDescriptorSet;
+        textureSamplerWriteSet.dstBinding = 0;
+        textureSamplerWriteSet.dstArrayElement = 0;
+        textureSamplerWriteSet.pImageInfo = texturesImageInfos.data();
+        texturesWriteSets.push_back(textureSamplerWriteSet);
+
+        // TextureWriteInfo
+        VkWriteDescriptorSet texturesWriteSet{};
+        texturesWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        texturesWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        texturesWriteSet.descriptorCount = context.textureCount;
+        texturesWriteSet.pImageInfo = texturesImageInfos.data(); 
+        texturesWriteSet.dstBinding = 1;
+        texturesWriteSet.dstSet = context.textureDescriptorSet;
+        texturesWriteSets.push_back(texturesWriteSet);
+
+        // Update Descriptor Sets 
+        vkUpdateDescriptorSets(context.device, 2, texturesWriteSets.data(), 0, nullptr);
+    };
 };
 
 void createCommandBuffers(vulkanContext& context)

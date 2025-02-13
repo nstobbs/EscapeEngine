@@ -35,9 +35,7 @@ for sourcePath in shaderPaths:
     compileCommand = "{compilerPath} {sourcePath} -o {outputPath}".format(compilerPath=GLSLC_PATH, sourcePath=sourcePath, outputPath=outputFilename)
     try:        
         runCommand = subprocess.run(compileCommand, shell=True, check=True, capture_output=True, encoding="utf-8")
-        print(f"Command {runCommand.args} exited with {runCommand.returncode} code, output: \n{runCommand.stdout}")
+        print(f"Command Finished: {runCommand.args} exited with {runCommand.returncode} code, output: \n{runCommand.stdout}")
     except subprocess.CalledProcessError as error:
-        print(f"Command Failed!")
-        print(error.output)
-
-#TODO Add commmand output prints for when the commands errors 
+        print(f"Command Failed:")
+        print(error.stderr)

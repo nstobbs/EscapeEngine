@@ -115,8 +115,11 @@ void RenderSystem::update()
         vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
         // TODO Come back and check if this makes sense
-        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 0, 3,
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 0, 2,
                             &m_context.descriptorSets.at(ent)[m_context.currentFrame], 0, nullptr);
+
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 2, 1,
+                            &m_context.textureDescriptorSet, 0, nullptr);
 
         uint32_t meshID = m_scene->m_MeshComponents.at(ent).ID; // Doesn't seem needed 
         uint32_t firstIndex = m_scene->m_MeshComponents.at(ent).details.firstIndex;
@@ -124,7 +127,7 @@ void RenderSystem::update()
 
         /* TEMP ONLY SUPPORT ONE TEXTURE MATERIALS */
         /* Push Constant FoR Sending TextureIndex*/
-        PushConstantTextureIndex index;
+        TextureIndexPush index;
         for (auto& texture : m_scene->m_TextureComponents.at(ent))
         {
             index.textureIndex = texture.ID - 1;
@@ -134,7 +137,7 @@ void RenderSystem::update()
                            m_context.pipelineLayouts.at(ent),
                            VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,
                            0,
-                           sizeof(PushConstantTextureIndex),
+                           sizeof(TextureIndexPush),
                            &index);
 
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);

@@ -20,7 +20,7 @@ int main()
     objLoader(vikingRoomMesh);
     vikingRoomTransform.position = glm::mat4(1.0f);
     vikingRoomShader.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
-    vikingRoomShader.fragmentSourcePath = "../../src/shaders/testFrag.spv";
+    vikingRoomShader.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
     vikingRoomTexture.texturePath = "../../textures/viking_room.png";
 
     SceneObject.setEntityMeshComponent(vikingRoomEntity, vikingRoomMesh);

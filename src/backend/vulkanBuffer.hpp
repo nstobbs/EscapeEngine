@@ -19,17 +19,11 @@ struct ObjectUniformBuffer
     glm::mat4 model;
 };
 
-struct PushConstantTextureIndex 
+struct TextureIndexPush 
 {
     int textureIndex;
 };
 
-// OLD Struct 
-struct UniformBufferObject {
-    glm::mat4 modelTransforms; /* Should Use from current Entity transformComponent */
-    glm::mat4 cameraView; /* Should Use Scene::Camera */
-    glm::mat4 cameraProjection; 
-};
 
 uint32_t findMemoryType(vulkanContext& context, uint32_t typeFiler, VkMemoryPropertyFlags properties);
 void createBuffer(vulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, 

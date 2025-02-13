@@ -85,6 +85,9 @@ struct vulkanContext
     VkDescriptorPool descriptorPool;
     std::unordered_map<Entity, std::vector<VkDescriptorSetLayout>> descriptorSetLayoutsLists;
     std::unordered_map<Entity, std::vector<VkDescriptorSet>> descriptorSets;
+    // TextureArray
+    VkDescriptorSetLayout textureDescriptorSetLayout;
+    VkDescriptorSet textureDescriptorSet;
 
     /* ############ Texture Component ############*/
     /* Texture Related*/
