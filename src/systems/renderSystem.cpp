@@ -114,6 +114,17 @@ void RenderSystem::update()
                          0, 1, &viewport);
         vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
+        //TODO Haha!
+        /*
+        I think i know what's going wrong here. Maybe. Or Just how I can sort it out at less.
+        We Could use the uniformLayout enum here to spilt the descriptors sets that are being
+        used for the scene and object. As I think they keep swapping around every frame and 
+        causing some weirdness there. So for now just use the uniformLayout enum and keep them
+        sparent. Does mean I still don't really understand how the descriptorSets are laid out
+        and grouped together in the vulkanContext. But uniformLayout would deffo sort that out.
+        Also time to starting thinking of a permanent name for it...
+        */
+
         // TODO Come back and check if this makes sense
         vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 0, 2,
                             &m_context.descriptorSets.at(ent)[m_context.currentFrame], 0, nullptr);

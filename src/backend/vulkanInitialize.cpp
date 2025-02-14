@@ -470,7 +470,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 {
     for (auto& ent : scene->m_Entities)
     {
-        if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end()) // TODO double check this
+        if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
             std::vector<VkDescriptorSetLayoutBinding> bindings;
             ShaderComponent currentShader = scene->m_ShaderComponents.at(ent);
@@ -492,8 +492,6 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             objectBufferBinding.pImmutableSamplers = nullptr;
             
             // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/DescriptorSets.1pp.pdf
-            // TODO need to create more that one descriptor sets 
-            // SceneLayout set + Include the Sampler Here too
 
             /* Set == 0*/
             std::vector<VkDescriptorSetLayout> layout;

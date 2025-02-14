@@ -93,13 +93,17 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     SceneUniformBuffer sceneUBO{};
-    sceneUBO.view = glm::lookAt(scene->m_ActiveCamera.position, scene->m_ActiveCamera.position + scene->m_ActiveCamera.front, scene->m_ActiveCamera.up);
-    sceneUBO.proj = glm::perspective(glm::radians(scene->getActiveCamera().focalLength),
-                            (float) context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 100.0f);
-    sceneUBO.proj[1][1] *= -1;
+    //sceneUBO.view = glm::lookAt(scene->m_ActiveCamera.position, scene->m_ActiveCamera.position + scene->m_ActiveCamera.front, scene->m_ActiveCamera.up);
+    //sceneUBO.proj = glm::perspective(glm::radians(scene->getActiveCamera().focalLength),
+    //                        (float) context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 100.0f);
+    //sceneUBO.proj[1][1] *= -1;
+    sceneUBO.view = glm::mat4(1.0f);
+    sceneUBO.proj = glm::mat4(1.0f);
+
 
     ObjectUniformBuffer objectUBO{};
-    objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    objectUBO.model = glm::mat4(1.0f);
 
     void* tempPointer1 = malloc(sizeof(SceneUniformBuffer));
     void* tempPointer2 = malloc(sizeof(ObjectUniformBuffer));
