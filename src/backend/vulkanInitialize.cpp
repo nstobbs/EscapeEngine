@@ -1005,7 +1005,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 sceneWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 sceneWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 sceneWriteSet.descriptorCount = 1;
-                sceneWriteSet.dstSet = context.descriptorSets.at(ent).at(sceneType)[i]; // TODO double check this ??
+                sceneWriteSet.dstSet = context.descriptorSets.at(ent).at(sceneType)[i];
                 sceneWriteSet.dstBinding = 0;
                 sceneWriteSet.dstArrayElement = 0;
                 sceneWriteSet.pBufferInfo = &sceneBufferInfo;
@@ -1015,7 +1015,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 objectWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 objectWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 objectWriteSet.descriptorCount = 1;
-                objectWriteSet.dstSet = context.descriptorSets.at(ent).at(objectType)[i]; // TODO i really dont like doing this, seems really wrong
+                objectWriteSet.dstSet = context.descriptorSets.at(ent).at(objectType)[i];
                 objectWriteSet.dstBinding = 0;
                 objectWriteSet.dstArrayElement = 0;
                 objectWriteSet.pBufferInfo = &objectBufferInfo;

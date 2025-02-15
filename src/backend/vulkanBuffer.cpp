@@ -105,12 +105,15 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
     //objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     objectUBO.model = glm::mat4(1.0f);
 
-    void* tempPointer1 = malloc(sizeof(SceneUniformBuffer));
-    void* tempPointer2 = malloc(sizeof(ObjectUniformBuffer));
 
-    memcpy(tempPointer1, &sceneUBO, sizeof(sceneUBO));
-    memcpy(tempPointer2, &objectUBO, sizeof(objectUBO));
+    /* TODO This doesn't seems to make any sense.
+    Vulkan creates a void* pointer for us to use
+    when we create the uniform buffer in the first place.
+    We NEED to memcpy to the address that we created and
+    assigned before with vulkan instead of trying to create
+    a new one.
+    */
 
-    context.uniformBufferMapped.at(sceneType)[context.currentFrame] = tempPointer1;
-    context.uniformBufferMapped.at(objectType)[context.currentFrame] = tempPointer2;
+    memcpy(context.uniformBufferMapped.at(sceneType)[context.currentFrame], &sceneUBO, sizeof(sceneUBO));
+    memcpy(context.uniformBufferMapped.at(objectType)[context.currentFrame], &objectUBO, sizeof(objectUBO));
 };

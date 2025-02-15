@@ -114,7 +114,14 @@ void RenderSystem::update()
                          0, 1, &viewport);
         vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
-        // TODO Come back and check if this makes sense
+        /*TODO When in RenderDoc, it looks like all of the descriptor sets created for the whole 
+        context are bind instead of just the one for the current frames. Not really sure why that even happening?
+        I feel like I'm being pretty clear during my binding that I only want to bind these 3 to the command buffer.
+        Maybe I'm not reseting the command buffer?
+
+        //TODO After checking the debugger, I can tell that the last comment is completely wrong. In the 
+        context descriptors set
+        */
         vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 0, 1,
                             &m_context.descriptorSets.at(ent).at(sceneType)[m_context.currentFrame], 0, nullptr);
 
