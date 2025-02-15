@@ -586,7 +586,7 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(tempLayout.size());
-            pipelineLayoutInfo.pSetLayouts =tempLayout.data();
+            pipelineLayoutInfo.pSetLayouts = tempLayout.data();
             pipelineLayoutInfo.pushConstantRangeCount = 1;
             pipelineLayoutInfo.pPushConstantRanges = &textureIndexPushRange;
             //pipelineLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV; //TODO TRYING OUT
@@ -602,7 +602,7 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
 //TODO this function is hot trash, we shouldnt be looping with this functions and have 
 // different loops running in other functions for the creation process of the shaders
 // seems like just a waste of time doing that.  
-void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)// TODO START BACK HERE
+void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)
 {
     ShaderComponent shader = scene->m_ShaderComponents.at(ent);
 
@@ -903,24 +903,24 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
 
     VkDescriptorPoolSize sceneBufferPoolSize{};
     sceneBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    sceneBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
+    sceneBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(sceneBufferPoolSize);
 
     VkDescriptorPoolSize objectBufferPoolSize{};
     objectBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    objectBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
+    objectBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(sceneBufferPoolSize);
     
     VkDescriptorPoolSize textureSamplerPoolSize{};
     textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLER;
-    textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
+    textureSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(textureSamplerPoolSize);
 
    if (context.textureCount != 0)
    {
         VkDescriptorPoolSize texturesPoolSize{};
         texturesPoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        texturesPoolSize.descriptorCount = static_cast<uint32_t>((MAX_FRAMES_IN_FLIGHT * context.textureCount) * extraSpace);
+        texturesPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * context.textureCount); //this wrong???
         poolSize.push_back(texturesPoolSize);
    };
 
@@ -928,7 +928,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
     poolInfo.pPoolSizes = poolSize.data();
-    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * extraSpace);
+    poolInfo.maxSets = static_cast<uint32_t>(3 * MAX_FRAMES_IN_FLIGHT);
 
     auto result = vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Descriptor Pool");
@@ -942,22 +942,45 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
             ShaderComponent shader = scene->m_ShaderComponents.at(ent);
+            int descriptorSetCount = static_cast<int>(MAX_FRAMES_IN_FLIGHT * context.descriptorSetLayoutsLists.at(ent).size());
 
-            // TODO DONE THIS TWO TIMES NOW MAYBE CREATE A FUNCTION TO DO THIS FOR US
-            // AND BETTER
+            /* TODO I'm stuck here again, i'm trying to alloc more that one descriptor set
+            per descriptor set layout here so I can see some of these descriptor sets for 
+            the frames in flight*/
+            std::vector<VkDescriptorSetLayout> layouts;
+            for (size_t x = 0; x < MAX_FRAMES_IN_FLIGHT; x++)
+            {
+                for (auto layout : context.descriptorSetLayoutsLists.at(ent))
+                {
+                    layouts.push_back(layout);
+                }
+            }
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = context.descriptorPool;
-            allocInfo.descriptorSetCount = static_cast<uint32_t>(context.descriptorSetLayoutsLists.at(ent).size()); // double check this as well 
-            allocInfo.pSetLayouts = context.descriptorSetLayoutsLists.at(ent).data();
+            allocInfo.descriptorSetCount = descriptorSetCount; 
+            allocInfo.pSetLayouts = layouts.data();
 
-            int descriptorSetCount = MAX_FRAMES_IN_FLIGHT * context.descriptorSetLayoutsLists.at(ent).size(); 
             std::vector<VkDescriptorSet> tempDescriptorSets(descriptorSetCount);
-
+            
             auto result = vkAllocateDescriptorSets(context.device, &allocInfo, tempDescriptorSets.data());
-            ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets");
-            context.descriptorSets[ent] = tempDescriptorSets;
+            ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets Uniforms Buffers");
+
+            //TODO deffo must be a cleaner way of handling this...
+            auto sceneFirst = tempDescriptorSets.begin();
+            auto sceneLast = tempDescriptorSets.begin() + static_cast<int>(tempDescriptorSets.size() / 2);
+
+            auto objectFirst = sceneLast;
+            auto objectLast = objectFirst + 2;
+
+            std::vector<VkDescriptorSet> sceneDescriptorSets(sceneFirst, sceneLast);
+            std::vector<VkDescriptorSet> objectDescriptorSets(objectFirst, objectLast);
+
+            //TODO Check this in the debugger first 
+            context.descriptorSets[ent][sceneType] = sceneDescriptorSets;
+            context.descriptorSets[ent][objectType] = objectDescriptorSets;
+
             
             // Create Descriptor Buffer Info Per Binding*
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -982,7 +1005,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 sceneWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 sceneWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 sceneWriteSet.descriptorCount = 1;
-                sceneWriteSet.dstSet = context.descriptorSets.at(ent)[0]; // TODO double check this ??
+                sceneWriteSet.dstSet = context.descriptorSets.at(ent).at(sceneType)[i]; // TODO double check this ??
                 sceneWriteSet.dstBinding = 0;
                 sceneWriteSet.dstArrayElement = 0;
                 sceneWriteSet.pBufferInfo = &sceneBufferInfo;
@@ -992,7 +1015,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
                 objectWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 objectWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 objectWriteSet.descriptorCount = 1;
-                objectWriteSet.dstSet = context.descriptorSets.at(ent)[1]; // TODO i really dont like doing this, seems really wrong
+                objectWriteSet.dstSet = context.descriptorSets.at(ent).at(objectType)[i]; // TODO i really dont like doing this, seems really wrong
                 objectWriteSet.dstBinding = 0;
                 objectWriteSet.dstArrayElement = 0;
                 objectWriteSet.pBufferInfo = &objectBufferInfo;
@@ -1026,8 +1049,7 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
         textureAllocInfo.pSetLayouts = &context.textureDescriptorSetLayout;
 
         auto result = vkAllocateDescriptorSets(context.device, &textureAllocInfo, &context.textureDescriptorSet);
-        ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets");
-        //context.descriptorSets[ent] = tempDescriptorSets;
+        ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Descriptor Sets Texture Array Buffer");
 
         std::vector<VkWriteDescriptorSet> texturesWriteSets{};
         VkWriteDescriptorSet textureSamplerWriteSet{};

@@ -84,7 +84,9 @@ struct vulkanContext
     /* Descriptor Sets Related */
     VkDescriptorPool descriptorPool;
     std::unordered_map<Entity, std::vector<VkDescriptorSetLayout>> descriptorSetLayoutsLists;
-    std::unordered_map<Entity, std::vector<VkDescriptorSet>> descriptorSets;
+    
+    //TODO this just doesn't seem like the best approach at all but ...
+    std::unordered_map<Entity, std::unordered_map<uniformLayout, std::vector<VkDescriptorSet>>> descriptorSets; 
     // TextureArray
     VkDescriptorSetLayout textureDescriptorSetLayout;
     VkDescriptorSet textureDescriptorSet;
