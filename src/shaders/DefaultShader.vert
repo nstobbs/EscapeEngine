@@ -4,7 +4,7 @@
 layout(set = 0, binding = 0) uniform SceneUniformBuffer {
     mat4 view;
     mat4 proj;
-} sceneData;
+} scene;
 
 layout(set = 1, binding = 0) uniform ObjectUniformBuffer {
     mat4 model;
@@ -17,6 +17,6 @@ layout(location = 0) out vec2 fragTexCoord;
 
 void main()
 {
-    gl_Position = object.model * vec4(inPosition, 1.0);
+    gl_Position = object.model * scene.view * scene.proj *  vec4(inPosition, 1.0);
     fragTexCoord = inTexCoord;
 }
