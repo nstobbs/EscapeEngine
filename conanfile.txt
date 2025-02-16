@@ -1,6 +1,5 @@
 [requires]
 glfw/3.4
-imgui/1.91.4-docking
 [generators]
 CMakeDeps
 CMakeToolchain
