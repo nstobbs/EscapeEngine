@@ -1,12 +1,14 @@
-cmake_minimum_required(VERSION 3.5..3.8)
+cmake_minimum_required(VERSION 3.8)
 
 include(FetchContent)
 
 project(ESC)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(glfw3 REQUIRED CONFIG)
+find_package(imgui REQUIRED CONFIG)
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
 FetchContent_Declare(
@@ -16,7 +18,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
-add_executable(ESC src/main.cpp
+add_executable(${PROJECT_NAME} src/main.cpp
 					src/config.cpp
 					src/config.hpp
 					src/entity/entity.hpp
@@ -41,6 +43,8 @@ add_executable(ESC src/main.cpp
 					src/backend/vulkanTexture.hpp
 					src/backend/glfwInitialize.cpp
 					src/backend/glfwInitialize.hpp
+					src/backend/imguiInitialize.cpp
+					src/backend/imguiInitialize.hpp
 					src/components/meshComponent.hpp
 					src/components/shaderComponent.hpp
 					src/components/transformComponent.hpp
@@ -53,21 +57,7 @@ add_executable(ESC src/main.cpp
 					src/loaders/objLoader.cpp
 					src/loaders/objLoader.hpp
 					lib/stb_image.h
-					lib/tiny_obj_loader.h
-					lib/imgui/imconfig.h
-					lib/imgui/imgui_demo.cpp
-					lib/imgui/imgui_draw.cpp
-					lib/imgui/imgui_internal.h
-					lib/imgui/imgui_tables.cpp
-					lib/imgui/imgui_widgets.cpp
-					lib/imgui/imgui.cpp
-					lib/imgui/imgui.h
-					lib/imgui/imstb_rectpack.h
-					lib/imgui/imstb_textedit.h
-					lib/imgui/imstb_truetype.h
-					lib/imgui/imgui_impl_glfw.cpp
-					lib/imgui/imgui_impl_glfw.h
-					lib/imgui/imgui_impl_vulkan.cpp
-					lib/imgui/imgui_impl_vulkan.h)
+					lib/tiny_obj_loader.h)
 					
-target_link_libraries(ESC PRIVATE glfw glm::glm Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glm::glm Vulkan::Vulkan imgui::imgui)
+# target_compile_definitions(${PROJECT_NAME} PUBLIC "IMGUI_USER_CONFIG=\"${CMAKE_CURRENT_SOURCE_DIR}/my_imgui_config.h\"") dont think we need this

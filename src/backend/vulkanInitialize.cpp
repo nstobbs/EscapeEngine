@@ -235,6 +235,7 @@ void createLogicalDevice(vulkanContext& context)
 
     vkGetDeviceQueue(context.device, indices.graphicsFamily.value(), 0, &context.graphicQueue);
     vkGetDeviceQueue(context.device, indices.presentFamily.value(), 0, &context.presentQueue);
+    context.familyIndices = indices;
 };
 
 /* Creates the Vulkan SwapChains for a VulkanContext */
@@ -897,7 +898,7 @@ void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceS
 
 void createDescriptorPool(vulkanContext& context, Scene* scene)
 {
-    int extraSpace = 2; //TODO THIS IS JUST A WASTE OF RESOURCES, PLEASE REMOVE THIS 
+    int extraSpace = 2; //FOR IM GUI
 
     std::vector<VkDescriptorPoolSize> poolSize{};
 
@@ -910,6 +911,11 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     objectBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     objectBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(sceneBufferPoolSize);
+
+    VkDescriptorPoolSize imguiTexturesCombinedPoolSize{};
+    imguiTexturesCombinedPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    imguiTexturesCombinedPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSize.push_back(imguiTexturesCombinedPoolSize);
     
     VkDescriptorPoolSize textureSamplerPoolSize{};
     textureSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_SAMPLER;
@@ -928,7 +934,8 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
     poolInfo.pPoolSizes = poolSize.data();
-    poolInfo.maxSets = static_cast<uint32_t>(3 * MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = static_cast<uint32_t>(4 * MAX_FRAMES_IN_FLIGHT);
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     auto result = vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Descriptor Pool");

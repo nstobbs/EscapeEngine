@@ -10,24 +10,8 @@
 #include "vulkanBuffer.hpp"
 #include "vulkanTexture.hpp"
 
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> computeFamily; //TODO Add compute Family Supports
-    std::optional<uint32_t> presentFamily;
-
-    bool isComplete()
-    {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
-};
-
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-const int MAX_FRAMES_IN_FLIGHT = 2;
-
-const int MAX_TEXTURE_COUNT = 2048;
 
 void createVulkanInstance(vulkanContext& context);
 std::vector<const char*> getRequiredExtensions();

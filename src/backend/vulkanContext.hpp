@@ -3,11 +3,30 @@
 
 #include "../config.hpp"
 #include "../entity/entity.hpp"
+
+
 /*
 vulkanContext.hpp
 Struct that holds all of the vulkan related
 objects for our applications to function. 
 */
+
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
+const int MAX_TEXTURE_COUNT = 2048;
+
+
+struct QueueFamilyIndices
+{
+    std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> computeFamily; //TODO Add compute Family Supports
+    std::optional<uint32_t> presentFamily;
+
+    bool isComplete()
+    {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
+};
 
 // TODO: I don't like this name, it's not really data type but different uniform  
 // TODO Shouldn't be here really
@@ -24,7 +43,8 @@ struct vulkanContext
     VkDevice device;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkInstance instance;
-    
+    QueueFamilyIndices familyIndices;
+
     /* Debug */
     VkDebugUtilsMessengerEXT debugMessenger;
 

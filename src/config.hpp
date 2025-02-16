@@ -6,11 +6,10 @@
 // Thrid Party 
 #include "../lib/stb_image.h"
 #include "../lib/tiny_obj_loader.h"
-/*
-#include "../lib/imgui/imconfig.h"
-#include "../lib/imgui/imgui.h"
-#include "../lib/imgui/imgui_internal.h"
 
+#include "imgui.h"
+#include "../res/bindings/imgui_impl_vulkan.h"
+#include "../res/bindings/imgui_impl_glfw.h"
 
 /* If there is any errors
 related to GLFW and Vulkan
