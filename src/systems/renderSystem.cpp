@@ -152,6 +152,18 @@ void RenderSystem::update()
 
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
     };
+    //TODO MOVE THIS TO A DIFFERENT FILE PLEASE!!!
+    /* TEMP IMGUI RENDER CODE, TO MOVE INTO IT'S OWN SYSTEM LATER */
+    bool showDemo = true;
+
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::ShowDemoWindow(&showDemo);
+
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_context.commandBuffers[m_context.currentFrame], 0);
 
     vkCmdEndRenderPass(m_context.commandBuffers[m_context.currentFrame]);
 

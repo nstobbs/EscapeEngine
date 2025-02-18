@@ -19,6 +19,7 @@ void initializeImgui(vulkanContext &context, GLFWwindow *pWindow)
     imguiInitInfo.DescriptorPool = context.descriptorPool;
     imguiInitInfo.RenderPass = context.renderPass;
     imguiInitInfo.Subpass = 0;
+    imguiInitInfo.MinImageCount = MAX_FRAMES_IN_FLIGHT;
     imguiInitInfo.ImageCount = MAX_FRAMES_IN_FLIGHT;
     imguiInitInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     ImGui_ImplVulkan_Init(&imguiInitInfo);

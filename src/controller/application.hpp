@@ -9,6 +9,8 @@
 #include "../backend/vulkanDebug.hpp"
 #include "../backend/vulkanTexture.hpp"
 
+#include "../backend/imguiInitialize.hpp"
+
 #include "../systems/renderSystem.hpp"
 #include "../systems/cameraSystem.hpp"
 

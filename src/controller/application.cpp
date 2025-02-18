@@ -105,6 +105,9 @@ void Application::startUp()
     /* Command Buffer & Sync Objects */
     createCommandBuffers(m_vulkanContext);
     createSyncObjects(m_vulkanContext);
+
+    /* Start up ImGui ..*/
+    initializeImgui(m_vulkanContext, m_window);
 };
 
 void Application::loop()
