@@ -94,18 +94,25 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
+    // TODO ALL OF THIS CAMERA STUFF IS JUST WRONG
+    // THIS STUFF SHOULD BE IN THE CAMERA SYSTEM ANYWAY.
+    // This is the vulkanBuffer.cpp!
     SceneUniformBuffer sceneUBO{};
-    //sceneUBO.view = glm::lookAt(scene->m_ActiveCamera.position, scene->m_ActiveCamera.position + scene->m_ActiveCamera.front, scene->m_ActiveCamera.up);
-    //sceneUBO.proj = glm::perspective(glm::radians(scene->getActiveCamera().focalLength),
-    //                        (float) context.swapChainExtent.width / (float) context.swapChainExtent.height, 0.1f, 100.0f);
+    glm::vec3 pos = scene->m_ActiveCamera.position;
+    glm::vec3 front = scene->m_ActiveCamera.front;
+    glm::vec3 up = scene->m_ActiveCamera.up;
+    float fLen = scene->m_ActiveCamera.focalLength;
+
+    sceneUBO.view = glm::lookAt(pos, pos + front, up);
+    //sceneUBO.proj = glm::perspective(glm::radians(fLen), static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 0.1f, 100.0f);
     //sceneUBO.proj[1][1] *= -1;
-    sceneUBO.view = glm::mat4(1.0f);
+    //sceneUBO.view = glm::mat4(1.0f);
     sceneUBO.proj = glm::mat4(1.0f);
 
 
     ObjectUniformBuffer objectUBO{};
-    objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    //objectUBO.model = glm::mat4(1.0f);
+    //objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    objectUBO.model = glm::mat4(1.0f);
 
     memcpy(context.uniformBufferMapped.at(sceneType)[context.currentFrame], &sceneUBO, sizeof(sceneUBO));
     memcpy(context.uniformBufferMapped.at(objectType)[context.currentFrame], &objectUBO, sizeof(objectUBO));

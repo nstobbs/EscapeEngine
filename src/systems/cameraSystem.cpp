@@ -8,15 +8,6 @@ CameraSystem::CameraSystem(Scene* scene, GLFWwindow* window)
 
 void CameraSystem::update()
 {   
-    // Print Camera Info
-    glm::vec3 temp1 = m_scene->m_ActiveCamera.front;
-    glm::vec3 temp2 = m_scene->m_ActiveCamera.position;
-    glm::vec3 temp3 = m_scene->m_ActiveCamera.up;
-    std::cout << "#####################################" << std::endl;
-    std::cout << "Front: " << temp1.x << " " << temp1.y << " " << temp1.z << std::endl;
-    std::cout << "position: " << temp2.x << " " << temp2.y << " " << temp2.z << std::endl;
-    std::cout << "Up: " << temp3.x << " " << temp3.y << " " << temp3.z << std::endl;
-    
     // Keyboard Input 
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
     {
@@ -53,8 +44,6 @@ void CameraSystem::update()
 
         double offsetX = (x - lastX) * mouseSen;
         double offsetY = (y - lastY) * mouseSen;;
-        std::cout << "############ MOUSE POS ############" << std::endl;
-        std::cout << "X: " << x << " Y: " << offsetY << std::endl;
         lastX = x;
         lastY = y;
 

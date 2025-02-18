@@ -70,7 +70,7 @@ void RenderSystem::update()
     renderPassInfo.renderArea.extent = m_context.swapChainExtent;
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+    clearValues[0].color = {{0.005f, 0.005f, 0.005f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -155,12 +155,35 @@ void RenderSystem::update()
     //TODO MOVE THIS TO A DIFFERENT FILE PLEASE!!!
     /* TEMP IMGUI RENDER CODE, TO MOVE INTO IT'S OWN SYSTEM LATER */
     bool showDemo = true;
+    bool enableDebugMenu = true;
 
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     ImGui::ShowDemoWindow(&showDemo);
+
+    /* TEMP WINDOW FOR CAMERA DEBUGGING */
+    ImGui::Begin("Debug Menu", &enableDebugMenu);
+    ImGui::SeparatorText("CAMERA INFORMATION:");
+
+
+    float x = m_scene->m_ActiveCamera.position.x;
+    float y = m_scene->m_ActiveCamera.position.y;
+    float z = m_scene->m_ActiveCamera.position.z;
+    ImGui::Text("Position: %04f, %04f, %04f", x, y, z);
+
+    x = m_scene->m_ActiveCamera.front.x;
+    y = m_scene->m_ActiveCamera.front.y;
+    z = m_scene->m_ActiveCamera.front.z;
+    ImGui::Text("Front: %04f, %04f, %04f", x, y, z);
+
+    x = m_scene->m_ActiveCamera.up.x;
+    y = m_scene->m_ActiveCamera.up.y;
+    z = m_scene->m_ActiveCamera.up.z;
+    ImGui::Text("Up: %04f, %04f, %04f", x, y, z);
+
+    ImGui::End();
 
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_context.commandBuffers[m_context.currentFrame], 0);

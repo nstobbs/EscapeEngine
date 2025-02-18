@@ -7,7 +7,7 @@ void initializeImgui(vulkanContext &context, GLFWwindow *pWindow)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
 
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
 
     ImGui_ImplGlfw_InitForVulkan(pWindow, true);
     ImGui_ImplVulkan_InitInfo imguiInitInfo{};
