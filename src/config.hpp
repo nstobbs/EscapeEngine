@@ -7,9 +7,10 @@
 #include "../lib/stb_image.h"
 #include "../lib/tiny_obj_loader.h"
 
-#include "imgui.h"
-#include "../res/bindings/imgui_impl_vulkan.h"
-#include "../res/bindings/imgui_impl_glfw.h"
+//TODO UPDATE WITH GIT SUBMOBLUES 
+#include "../lib/imgui/imgui.h"
+#include "../lib/imgui/backends/imgui_impl_vulkan.h"
+#include "../lib/imgui/backends/imgui_impl_glfw.h"
 
 /* If there is any errors
 related to GLFW and Vulkan

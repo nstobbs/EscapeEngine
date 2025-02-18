@@ -6,9 +6,9 @@ project(ESC)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
+set(imgui_DIR lib/imgui)
 
 find_package(glfw3 REQUIRED CONFIG)
-find_package(imgui REQUIRED CONFIG)
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
 FetchContent_Declare(
@@ -57,7 +57,20 @@ add_executable(${PROJECT_NAME} src/main.cpp
 					src/loaders/objLoader.cpp
 					src/loaders/objLoader.hpp
 					lib/stb_image.h
-					lib/tiny_obj_loader.h)
+					lib/tiny_obj_loader.h
+					lib/imgui/imgui.h
+					lib/imgui/imgui.cpp
+					lib/imgui/imgui_draw.cpp
+					lib/imgui/imgui_demo.cpp
+					lib/imgui/imgui_internal.h
+					lib/imgui/imgui_tables.cpp
+					lib/imgui/imgui_widgets.cpp
+					lib/imgui/imstb_rectpack.h
+					lib/imgui/imstb_textedit.h
+					lib/imgui/imstb_truetype.h
+					lib/imgui/backends/imgui_impl_vulkan.cpp
+					lib/imgui/backends/imgui_impl_vulkan.h
+					lib/imgui/backends/imgui_impl_glfw.cpp
+					lib/imgui/backends/imgui_impl_glfw.h)
 					
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glm::glm Vulkan::Vulkan imgui::imgui)
-# target_compile_definitions(${PROJECT_NAME} PUBLIC "IMGUI_USER_CONFIG=\"${CMAKE_CURRENT_SOURCE_DIR}/my_imgui_config.h\"") dont think we need this
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glm::glm Vulkan::Vulkan)

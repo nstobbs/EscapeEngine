@@ -27,5 +27,4 @@ void initializeImgui(vulkanContext &context, GLFWwindow *pWindow)
     VkCommandBuffer commandBuffer = beginSingleTimeCommands(context);
     ImGui_ImplVulkan_CreateFontsTexture();
     endSingleTimeCommands(context, commandBuffer);
-    
 };
