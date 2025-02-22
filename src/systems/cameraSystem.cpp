@@ -6,41 +6,39 @@ CameraSystem::CameraSystem(Scene* scene, GLFWwindow* window)
     m_window = window;
 };
 
-void CameraSystem::update()
+void CameraSystem::update(float delta)
 {   
-    // Keyboard Input 
+    /* KeyBoard Input */
+    /* Forward */
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
     {
-        // Forward
-        m_scene->m_ActiveCamera.position += cameraSpeed *  m_scene->m_ActiveCamera.front;
+        m_scene->m_ActiveCamera.position += cameraSpeed * m_scene->m_ActiveCamera.position;
     };
 
+    /* Left */
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_TRUE)
     {
-        // Left
-    m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
+        m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
     };
 
+    /* Backward */
     if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_TRUE)
     {
-        // Backward
-        m_scene->m_ActiveCamera.position -= cameraSpeed *  m_scene->m_ActiveCamera.front;
+        m_scene->m_ActiveCamera.position -= cameraSpeed *  m_scene->m_ActiveCamera.position;
     };
 
+    /* Right */
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_TRUE)
     {
-        // Right
         m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
     };
 
-    // Mouse Input
+    /* Mouse Input */
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
     {
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide Cursor
         double x,y;
         glfwGetCursorPos(m_window, &x, &y);
-
-        
 
         double offsetX = (x - lastX) * mouseSen;
         double offsetY = (y - lastY) * mouseSen;;
@@ -66,11 +64,11 @@ void CameraSystem::update()
         direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
         m_scene->m_ActiveCamera.front = glm::normalize(direction); 
 
-    }
+    };
 
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
     {
         /* Return the Cursor*/
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+    };
 };  

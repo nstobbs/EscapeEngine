@@ -466,7 +466,7 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
 
     throw std::runtime_error("{ERROR} FAILED TO FIND SUPPORTED FORMAT");
 };
-
+//TODO Make this better
 void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 {
     for (auto& ent : scene->m_Entities)
@@ -676,7 +676,7 @@ void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
@@ -934,7 +934,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
     poolInfo.pPoolSizes = poolSize.data();
-    poolInfo.maxSets = static_cast<uint32_t>(4 * MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = static_cast<uint32_t>(8 * MAX_FRAMES_IN_FLIGHT); //TODO find out how many max sets we need.
     poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     auto result = vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool);

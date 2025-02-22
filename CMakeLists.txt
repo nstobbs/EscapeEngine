@@ -22,6 +22,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
 					src/config.cpp
 					src/config.hpp
 					src/entity/entity.hpp
+					src/entity/entityFactor.cpp
+					src/entity/entityFactor.hpp
 					src/controller/scene.cpp
 					src/controller/scene.hpp
 					src/controller/application.cpp

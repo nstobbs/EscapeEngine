@@ -1,6 +1,7 @@
 #include "config.hpp"
 #include "controller/application.hpp"
 #include "controller/scene.hpp"
+#include "entity/entityFactor.hpp"
 
 #include "loaders/objLoader.hpp" 
 
@@ -10,6 +11,9 @@ int main()
     Scene SceneObject;
 
     /* Create Entity */
+    EntityFactor Factor(&SceneObject);
+    Entity Grid = Factor.createGrid();
+
     Entity vikingRoomEntity = SceneObject.makeEntity();
     MeshComponent vikingRoomMesh;
     TransformComponent vikingRoomTransform;
@@ -31,9 +35,9 @@ int main()
     /* Create Camera */
     CameraComponent Camera;
     Camera.focalLength = 45.0f;
-    Camera.front = glm::vec3(0.5f, -0.5f, 0.0f);
-    Camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-    Camera.position = glm::vec3(0.5f, 0.5f, 0.0f);
+    Camera.front = glm::vec3(0.0f, 0.0f, 0.0f);
+    Camera.up = glm::vec3(0.0f, 0.0f, -1.0f); // -1 is upwards in vulkan
+    Camera.position = glm::vec3(1.5f, 3.0f, 2.0f);
     SceneObject.setActiveCamera(Camera);
 
     /* Create Application */

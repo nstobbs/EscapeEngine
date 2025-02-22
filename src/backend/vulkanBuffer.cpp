@@ -88,12 +88,6 @@ void copyBufferToImage(vulkanContext& context, VkBuffer buffer, VkImage image, u
 //TODO Might be about time to start thinking about separating these functions for 
 void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponent& transform)
 {
-    /* Don't need this clock right now but could be useful later... */
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
     // TODO ALL OF THIS CAMERA STUFF IS JUST WRONG
     // THIS STUFF SHOULD BE IN THE CAMERA SYSTEM ANYWAY.
     // This is the vulkanBuffer.cpp!
@@ -103,11 +97,10 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
     glm::vec3 up = scene->m_ActiveCamera.up;
     float fLen = scene->m_ActiveCamera.focalLength;
 
-    sceneUBO.view = glm::lookAt(pos, pos + front, up);
-    //sceneUBO.proj = glm::perspective(glm::radians(fLen), static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 0.1f, 100.0f);
+    sceneUBO.view = glm::lookAt(pos, front, up);
+    sceneUBO.proj = glm::perspective(glm::radians(fLen), static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 0.1f, 100.0f);
     //sceneUBO.proj[1][1] *= -1;
-    //sceneUBO.view = glm::mat4(1.0f);
-    sceneUBO.proj = glm::mat4(1.0f);
+    //sceneUBO.proj = glm::mat4(1.0f);
 
 
     ObjectUniformBuffer objectUBO{};

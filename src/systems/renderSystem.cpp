@@ -57,10 +57,8 @@ void RenderSystem::update()
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
 
-    if (vkBeginCommandBuffer(m_context.commandBuffers[m_context.currentFrame], &beginInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO BEGIN COMMAND BUFFER.");
-    };
+    auto result = vkBeginCommandBuffer(m_context.commandBuffers[m_context.currentFrame], &beginInfo); 
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Begin Command Buffer");
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -114,14 +112,6 @@ void RenderSystem::update()
                          0, 1, &viewport);
         vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
 
-        /*TODO When in RenderDoc, it looks like all of the descriptor sets created for the whole 
-        context are bind instead of just the one for the current frames. Not really sure why that even happening?
-        I feel like I'm being pretty clear during my binding that I only want to bind these 3 to the command buffer.
-        Maybe I'm not reseting the command buffer?
-
-        //TODO After checking the debugger, I can tell that the last comment is completely wrong. In the 
-        context descriptors set
-        */
         vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(ent), 0, 1,
                             &m_context.descriptorSets.at(ent).at(sceneType)[m_context.currentFrame], 0, nullptr);
 
@@ -152,6 +142,7 @@ void RenderSystem::update()
 
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
     };
+    
     //TODO MOVE THIS TO A DIFFERENT FILE PLEASE!!!
     /* TEMP IMGUI RENDER CODE, TO MOVE INTO IT'S OWN SYSTEM LATER */
     bool showDemo = true;
@@ -190,10 +181,8 @@ void RenderSystem::update()
 
     vkCmdEndRenderPass(m_context.commandBuffers[m_context.currentFrame]);
 
-    if (vkEndCommandBuffer(m_context.commandBuffers[m_context.currentFrame]) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO RECORD COMMAND BUFFER.");
-    };
+    result =  vkEndCommandBuffer(m_context.commandBuffers[m_context.currentFrame]);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "End Command Buffer Recording");
     /*Record Command Buffer End*/
 
     VkSubmitInfo submitInfo{};
@@ -211,12 +200,9 @@ void RenderSystem::update()
     VkSemaphore signalSemaphores[] = {m_context.renderFinishedSemaphores[m_context.currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
-
-    if (vkQueueSubmit(m_context.graphicQueue, 1, &submitInfo,
-                      m_context.inFlightFences[m_context.currentFrame]) != VK_SUCCESS)
-    {
-        std::runtime_error("{ERROR} FAILED TO SUBMIT DRAW COMMAND BUFFER.");
-    };
+    
+    result = vkQueueSubmit(m_context.graphicQueue, 1, &submitInfo, m_context.inFlightFences[m_context.currentFrame]);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Submit Draw Command Buffer");
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

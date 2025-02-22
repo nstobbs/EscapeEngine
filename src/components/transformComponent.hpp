@@ -6,6 +6,11 @@
 struct TransformComponent
 {
     glm::mat4 position;
+    
+    //TODO sort out later
+    //glm::vec3 position;
+    //glm::vec3 scale;
+    //glm::vec3 rotation;
 };
 
 

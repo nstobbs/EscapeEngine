@@ -62,8 +62,6 @@ void Application::startUp()
     createDepthResources(m_vulkanContext);
     createFramebuffers(m_vulkanContext);
 
-  
-
     /* All MeshComponents should be setup
     before creating the VertexBuffers */
     // Move this into it's own functoin
@@ -113,15 +111,25 @@ void Application::startUp()
 void Application::loop()
 {
     std::cout << "{INFO} Starting Loop...\n";
-    CameraSystem CSystem(m_Scene, m_window);
-    RenderSystem RSystem(m_vulkanContext, m_Scene, m_window);
-    RSystem.start();
+    CameraSystem cameraSystem(m_Scene, m_window);
+    RenderSystem renderSystem(m_vulkanContext, m_Scene, m_window);
+    renderSystem.start();
+    float delta = 0.0f;
+
+    //TODO Double check the timing maths here 
     while(!glfwWindowShouldClose(m_window))
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         glfwPollEvents();
-        /* System Updates Happen Here*/
-        RSystem.update();
-        CSystem.update(); // crash when it's placed before the rendersystem ??
+        renderSystem.update();
+        cameraSystem.update(delta); // crash when it's placed before the renderSystem ??
+
+        auto end = std::chrono::high_resolution_clock::now();
+        delta = std::chrono::duration<float, std::chrono::seconds::period>(end - start).count();
+        int fps = static_cast<int>(1 / delta);
+        //std::cout << "frame timing: " << delta << std::endl;
+        //std::cout << "framerate: " << fps << std::endl;
     }
 };
 

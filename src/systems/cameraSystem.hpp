@@ -8,7 +8,7 @@ class CameraSystem
 {
     public:
         CameraSystem(Scene* scene, GLFWwindow* window);
-        void update();
+        void update(float delta);
         
     private:
         Scene* m_scene;
