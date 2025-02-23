@@ -42,3 +42,34 @@ Entity EntityFactor::createGrid()
 
     return ent;
 };
+
+Entity EntityFactor::createOBJMesh(std::string objFilePath, std::vector<std::string> textureFilepaths)
+{
+    Entity ent = m_scene->makeEntity();
+    MeshComponent mesh;
+    TransformComponent transform;
+    ShaderComponent shader;
+    std::vector<TextureComponent> textures;
+    
+    mesh.filepath = objFilePath;
+    objLoader(mesh);
+
+    transform.position = glm::mat4(1.0f);
+
+    // Uses Default Shader for now
+    shader.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
+    shader.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
+
+    for (auto& texture : textureFilepaths)
+    {
+        TextureComponent t;
+        t.texturePath = texture;
+        m_scene->pushEntityTextureComponent(ent, t);
+    };
+
+    m_scene->setEntityMeshComponent(ent, mesh);
+    m_scene->setEntityTransformComponent(ent, transform);
+    m_scene->setEntityShaderComponent(ent, shader);
+
+    return ent;
+};

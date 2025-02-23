@@ -3,8 +3,6 @@
 #include "controller/scene.hpp"
 #include "entity/entityFactor.hpp"
 
-#include "loaders/objLoader.hpp" 
-
 int main()
 {
     /* Create Scene */
@@ -14,23 +12,9 @@ int main()
     EntityFactor Factor(&SceneObject);
     Entity Grid = Factor.createGrid();
 
-    Entity vikingRoomEntity = SceneObject.makeEntity();
-    MeshComponent vikingRoomMesh;
-    TransformComponent vikingRoomTransform;
-    ShaderComponent vikingRoomShader;
-    TextureComponent vikingRoomTexture;
-
-    vikingRoomMesh.filepath = "../../models/viking_room.obj";
-    objLoader(vikingRoomMesh);
-    vikingRoomTransform.position = glm::mat4(1.0f);
-    vikingRoomShader.vertexSourcePath = "../../src/shaders/DefaultShaderVert.spv";
-    vikingRoomShader.fragmentSourcePath = "../../src/shaders/DefaultShaderFrag.spv";
-    vikingRoomTexture.texturePath = "../../textures/viking_room.png";
-
-    SceneObject.setEntityMeshComponent(vikingRoomEntity, vikingRoomMesh);
-    SceneObject.setEntityTransformComponent(vikingRoomEntity, vikingRoomTransform);
-    SceneObject.setEntityShaderComponent(vikingRoomEntity, vikingRoomShader);
-    SceneObject.pushEntityTextureComponent(vikingRoomEntity, vikingRoomTexture);
+    std::vector<std::string> vikingRoomTextureFilepaths;
+    vikingRoomTextureFilepaths.push_back("../../textures/viking_room.png");
+    Entity vikingRoom = Factor.createOBJMesh("../../models/viking_room.obj", vikingRoomTextureFilepaths);
     
     /* Create Camera */
     CameraComponent Camera;
