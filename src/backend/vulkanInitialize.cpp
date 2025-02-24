@@ -37,7 +37,7 @@ void createVulkanInstance(vulkanContext& context)
         populateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
     } else {
-        createInfo.enabledExtensionCount = 0;
+        createInfo.enabledExtensionCount = 2; //TODO TEMP fix...
     }
 
     /*Create Vulkan Instance*/
@@ -67,10 +67,8 @@ std::vector<const char*> getRequiredExtensions()
 /* Creates a Vulkan Surface for a VulkanContext */
 void createSurface(vulkanContext& context, GLFWwindow* window)
 {
-    if (glfwCreateWindowSurface(context.instance, window, nullptr, &context.surface) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE SURFACE.");
-    };
+    auto result = glfwCreateWindowSurface(context.instance, window, nullptr, &context.surface);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Surface");
 };
 
 /* Picks and sets the Phyiscal Device in a VulkanContext */

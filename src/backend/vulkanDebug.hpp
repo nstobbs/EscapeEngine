@@ -8,7 +8,7 @@
 #ifdef NDEBUG
     const bool ENABLE_VALIDATION_LAYERS = false;
 #else
-    const bool ENABLE_VALIDATION_LAYERS = true;
+    const bool ENABLE_VALIDATION_LAYERS = false; //TODO turn on
 #endif
 
 const std::vector<const char*> validationLayers = {

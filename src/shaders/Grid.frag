@@ -21,17 +21,48 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    /* Grid Rendering Plan
-        Create two modulo blocks.
-            One for the big boxes
-            And one for the samller boxes
+    // LineColors
+	vec4 cellColor = vec4(0.1f, 0.1f, 0.1f, 0.1f);
+	vec4 subCellColor = vec4(0.01f, 0.01f, 0.01f, 0.01f);
 
-        Generate lines from these blocks.
-         
-     */
-    float size = 1.0f;
-    float u = modf(fragTexCoord.y, size) / size;
-    float v = modf(fragTexCoord.y, size) / size;
-    outColor = vec4(u, v, 0.0f, 1.0f);
-    //outColor = texture(sampler2D(textures[texIndex.textureIndex], _sampler), fragTexCoord);
+    // Cell Size
+	float cellSize = 0.1f;
+	float halfCellSize = cellSize * 0.5f;
+
+	float subCellSize = 0.020f;
+	float halfSubCellSize = subCellSize * 0.5f;
+
+	// Line Thickness
+	float cellLineThickness = 0.01f;
+	float subCellLineThickness = 0.1f;
+
+	// Cell Coords
+	vec2 cellCoords = mod(fragTexCoord, cellSize) / cellSize;	
+	vec2 subCellCoords = mod(fragTexCoord, subCellSize) / subCellSize;
+	
+	// Cell Distance
+	vec2 distanceToCell = abs(cellCoords - halfCellSize);
+	vec2 distanceToSubCell = abs(subCellCoords - halfSubCellSize);
+
+	// Adjusted Thickness
+	vec2 d = fwidth(fragTexCoord);
+	vec2 adjustedCellLineThickness = 0.5 * (cellLineThickness + d);
+	vec2 adjustedSubCellLineThickness = 0.5 * (subCellLineThickness + d);
+	
+	outColor = vec4(0.005f);
+	if (distanceToSubCell.x < adjustedSubCellLineThickness.x ||
+		distanceToSubCell.x < adjustedSubCellLineThickness.y ||
+		distanceToSubCell.y < adjustedSubCellLineThickness.x ||
+		distanceToSubCell.y < adjustedSubCellLineThickness.y)
+	{
+		outColor = subCellColor;
+	};
+
+	if (distanceToCell.x < adjustedCellLineThickness.x || 
+		distanceToCell.x < adjustedCellLineThickness.y ||
+		distanceToCell.y < adjustedCellLineThickness.x ||
+		distanceToCell.y < adjustedCellLineThickness.y)
+	{
+		outColor = cellColor;
+	};
 }
