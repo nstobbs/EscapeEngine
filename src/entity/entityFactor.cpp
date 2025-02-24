@@ -15,13 +15,13 @@ Entity EntityFactor::createGrid()
 
     std::vector<Vertex> vertices(4);
     vertices[0].pos = glm::vec3(-2.0f, 2.0f, 0.0f);
-    vertices[0].texCoord = glm::vec2(-1.0f, 1.0f);
+    vertices[0].texCoord = glm::vec2(0.0f, 1.0f);
     vertices[1].pos = glm::vec3(2.0f, 2.0f, 0.0f);
     vertices[1].texCoord = glm::vec2(1.0f, 1.0f);
     vertices[2].pos = glm::vec3(-2.0f, -2.0f, 0.0f);
-    vertices[2].texCoord = glm::vec2(-1.0f, -1.0f);
+    vertices[2].texCoord = glm::vec2(0.0f, 0.0f);
     vertices[3].pos = glm::vec3(2.0f, -2.0f, 0.0f);
-    vertices[3].texCoord = glm::vec2(1.0f, -1.0f);
+    vertices[3].texCoord = glm::vec2(1.0f, 0.0f);
 
     mesh.vertices = vertices;
     mesh.verticesCount = 4;

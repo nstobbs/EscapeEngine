@@ -21,5 +21,17 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor = texture(sampler2D(textures[texIndex.textureIndex], _sampler), fragTexCoord);
+    /* Grid Rendering Plan
+        Create two modulo blocks.
+            One for the big boxes
+            And one for the samller boxes
+
+        Generate lines from these blocks.
+         
+     */
+    float size = 1.0f;
+    float u = modf(fragTexCoord.y, size) / size;
+    float v = modf(fragTexCoord.y, size) / size;
+    outColor = vec4(u, v, 0.0f, 1.0f);
+    //outColor = texture(sampler2D(textures[texIndex.textureIndex], _sampler), fragTexCoord);
 }
