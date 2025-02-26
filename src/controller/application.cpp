@@ -114,6 +114,7 @@ void Application::loop()
     CameraSystem cameraSystem(m_Scene, m_window);
     RenderSystem renderSystem(m_vulkanContext, m_Scene, m_window);
     renderSystem.start();
+    cameraSystem.start();
     float delta = 0.0f;
 
     //TODO Double check the timing maths here 

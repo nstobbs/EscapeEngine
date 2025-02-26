@@ -164,15 +164,23 @@ void RenderSystem::update()
     float z = m_scene->m_ActiveCamera.position.z;
     ImGui::Text("Position: %04f, %04f, %04f", x, y, z);
 
-    x = m_scene->m_ActiveCamera.front.x;
-    y = m_scene->m_ActiveCamera.front.y;
-    z = m_scene->m_ActiveCamera.front.z;
-    ImGui::Text("Front: %04f, %04f, %04f", x, y, z);
+    x = m_scene->m_ActiveCamera.direction.x;
+    y = m_scene->m_ActiveCamera.direction.y;
+    z = m_scene->m_ActiveCamera.direction.z;
+    ImGui::Text("Direction: %04f, %04f, %04f", x, y, z);
 
     x = m_scene->m_ActiveCamera.up.x;
     y = m_scene->m_ActiveCamera.up.y;
     z = m_scene->m_ActiveCamera.up.z;
     ImGui::Text("Up: %04f, %04f, %04f", x, y, z);
+
+    double yaw = m_scene->m_ActiveCamera.yaw;
+    double pitch = m_scene->m_ActiveCamera.pitch;
+    float lens = m_scene->m_ActiveCamera.focalLength;
+
+    ImGui::Text("Pitch: %lf", pitch);
+    ImGui::Text("Yaw: %lf", yaw);
+    ImGui::Text("Focal Length: %04f", lens);
 
     ImGui::End();
 

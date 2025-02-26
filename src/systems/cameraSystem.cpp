@@ -6,31 +6,46 @@ CameraSystem::CameraSystem(Scene* scene, GLFWwindow* window)
     m_window = window;
 };
 
+void CameraSystem::start()
+{
+    yaw = -90.0f;
+    pitch = 0.0f;
+
+    // Center Camera with Mouse ????
+    int width, height;
+    glfwGetWindowSize(m_window, &width, &height);
+    lastX = static_cast<double>(width) / 2.0;
+    lastY = static_cast<double>(height) / 2.0;
+
+    m_scene->m_ActiveCamera.pitch = pitch;
+    m_scene->m_ActiveCamera.yaw = yaw;
+};
+
 void CameraSystem::update(float delta)
 {   
     /* KeyBoard Input */
     /* Forward */
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position += cameraSpeed * m_scene->m_ActiveCamera.position;
+        m_scene->m_ActiveCamera.position += (m_scene->m_ActiveCamera.direction * cameraSpeed);
     };
 
     /* Left */
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
+        m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.direction, m_scene->m_ActiveCamera.up)) * cameraSpeed;
     };
 
     /* Backward */
     if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position -= cameraSpeed *  m_scene->m_ActiveCamera.position;
+        m_scene->m_ActiveCamera.position -= (m_scene->m_ActiveCamera.direction * cameraSpeed);
     };
 
     /* Right */
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(m_scene->m_ActiveCamera.front, m_scene->m_ActiveCamera.up)) * cameraSpeed;
+        m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(m_scene->m_ActiveCamera.direction, m_scene->m_ActiveCamera.up)) * cameraSpeed;
     };
 
     /* Mouse Input */
@@ -48,27 +63,48 @@ void CameraSystem::update(float delta)
         yaw += offsetX;
         pitch += offsetY;
 
-        if (pitch > 89.9f)
+        if (pitch > 89.0f)
         {
             pitch = 89.0f;
         }
-
         if (pitch < -89.0f)
         {
             pitch = -89.0f;
         }
 
-        glm::vec3 direction;
-        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        direction.y = sin(glm::radians(pitch));
-        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        m_scene->m_ActiveCamera.front = glm::normalize(direction); 
+        if (yaw > 359.0f)
+        {
+            yaw = 1.0f;
+        }
+        if (yaw < 0.0f)
+        {
+            yaw = 359.0f;
+        }
 
+        glm::vec3 direction;
+        
+        direction.x = cos(glm::radians(static_cast<float>(pitch))) * cos(glm::radians(static_cast<float>(yaw)));
+        direction.y = sin(glm::radians(static_cast<float>(yaw)));
+        direction.z = sin(glm::radians(static_cast<float>(pitch))) * cos(glm::radians(static_cast<float>(yaw)));
+        m_scene->m_ActiveCamera.direction = glm::normalize(direction);
+        m_scene->m_ActiveCamera.pitch = pitch;
+        m_scene->m_ActiveCamera.yaw = yaw;
     };
 
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
     {
         /* Return the Cursor*/
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    };
+
+    /* Focal Lens Controls */
+    if(glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_TRUE)
+    {
+        m_scene->m_ActiveCamera.focalLength += lensSpeed;
+    };
+
+    if(glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_TRUE)
+    {
+        m_scene->m_ActiveCamera.focalLength -= lensSpeed;
     };
 };  

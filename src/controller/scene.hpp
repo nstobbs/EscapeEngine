@@ -9,6 +9,7 @@
 #include "../components/transformComponent.hpp"
 #include "../components/shaderComponent.hpp"
 #include "../components/textureComponent.hpp"
+#include "../backend/vulkanContext.hpp" //TODO Feel like this is over stepping a bit with the backend. Vulkan shouldnt be used here
 
 class Scene
 {
@@ -19,6 +20,7 @@ class Scene
         CameraComponent getActiveCamera();
         void setActiveCamera(CameraComponent camera);
         glm::mat4 getCameraView();
+        glm::mat4 getCameraProj(vulkanContext& context);
 
         void setEntityTransformComponent(Entity ent, TransformComponent transform);
         void setEntityMeshComponent(Entity ent, MeshComponent mesh);

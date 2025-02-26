@@ -23,10 +23,18 @@ void Scene::setActiveCamera(CameraComponent camera)
     m_ActiveCamera = camera;
 };
 
+// TODO Shouldn't really be a part of the Scene Class really
 glm::mat4 Scene::getCameraView()
 {
-    return glm::lookAt(m_ActiveCamera.position, m_ActiveCamera.front, m_ActiveCamera.up);
+    return glm::lookAt(m_ActiveCamera.position, m_ActiveCamera.position + m_ActiveCamera.direction, m_ActiveCamera.up);
 }
+//TODO could be better 
+glm::mat4 Scene::getCameraProj(vulkanContext& context)
+{
+    return glm::perspective(glm::radians(m_ActiveCamera.focalLength), 
+           static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 
+           0.1f, 100.0f);
+};
 
 void Scene::setEntityTransformComponent(Entity ent, TransformComponent transform)
 {

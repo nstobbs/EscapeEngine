@@ -88,20 +88,11 @@ void copyBufferToImage(vulkanContext& context, VkBuffer buffer, VkImage image, u
 //TODO Might be about time to start thinking about separating these functions for 
 void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponent& transform)
 {
-    // TODO ALL OF THIS CAMERA STUFF IS JUST WRONG
-    // THIS STUFF SHOULD BE IN THE CAMERA SYSTEM ANYWAY.
-    // This is the vulkanBuffer.cpp!
     SceneUniformBuffer sceneUBO{};
-    glm::vec3 pos = scene->m_ActiveCamera.position;
-    glm::vec3 front = scene->m_ActiveCamera.front;
-    glm::vec3 up = scene->m_ActiveCamera.up;
-    float fLen = scene->m_ActiveCamera.focalLength;
 
-    sceneUBO.view = glm::lookAt(pos, front, up);
-    sceneUBO.proj = glm::perspective(glm::radians(fLen), static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 0.1f, 100.0f);
+    sceneUBO.view = scene->getCameraView();
+    sceneUBO.proj = scene->getCameraProj(context);
     //sceneUBO.proj[1][1] *= -1;
-    //sceneUBO.proj = glm::mat4(1.0f);
-
 
     ObjectUniformBuffer objectUBO{};
     //objectUBO.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
