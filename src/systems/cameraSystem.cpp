@@ -23,6 +23,7 @@ void CameraSystem::start()
 
 void CameraSystem::update(float delta)
 {   
+    
     /* KeyBoard Input */
     /* Forward */
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
@@ -56,7 +57,7 @@ void CameraSystem::update(float delta)
         glfwGetCursorPos(m_window, &x, &y);
 
         double offsetX = (x - lastX) * mouseSen;
-        double offsetY = (y - lastY) * mouseSen;;
+        double offsetY = (y - lastY) * mouseSen;
         lastX = x;
         lastY = y;
 
@@ -66,8 +67,7 @@ void CameraSystem::update(float delta)
         if (pitch > 89.0f)
         {
             pitch = 89.0f;
-        }
-        if (pitch < -89.0f)
+        } else if (pitch < -89.0f)
         {
             pitch = -89.0f;
         }
@@ -75,8 +75,7 @@ void CameraSystem::update(float delta)
         if (yaw > 359.0f)
         {
             yaw = 1.0f;
-        }
-        if (yaw < 0.0f)
+        } else if (yaw < 0.0f)
         {
             yaw = 359.0f;
         }
@@ -95,6 +94,11 @@ void CameraSystem::update(float delta)
     {
         /* Return the Cursor*/
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        // Center Camera with Mouse
+        int width, height;
+        glfwGetWindowSize(m_window, &width, &height);
+        lastX = static_cast<double>(width) / 2.0;
+        lastY = static_cast<double>(height) / 2.0;
     };
 
     /* Focal Lens Controls */

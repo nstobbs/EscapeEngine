@@ -31,9 +31,12 @@ glm::mat4 Scene::getCameraView()
 //TODO could be better 
 glm::mat4 Scene::getCameraProj(vulkanContext& context)
 {
-    return glm::perspective(glm::radians(m_ActiveCamera.focalLength), 
-           static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 
-           0.1f, 100.0f);
+    auto matrix = glm::perspective(glm::radians(m_ActiveCamera.focalLength), 
+                  static_cast<float>(context.swapChainExtent.width /  context.swapChainExtent.height), 
+                  0.1f, 100.0f);
+    matrix[1][1] *= -1;
+
+    return matrix;
 };
 
 void Scene::setEntityTransformComponent(Entity ent, TransformComponent transform)
