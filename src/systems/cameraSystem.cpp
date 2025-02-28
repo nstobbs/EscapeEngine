@@ -61,8 +61,8 @@ void CameraSystem::update(float delta)
         lastX = x;
         lastY = y;
 
-        yaw += offsetX;
-        pitch += offsetY;
+        yaw -= offsetX;
+        pitch -= offsetY;
 
         if (pitch > 89.0f)
         {
@@ -80,11 +80,17 @@ void CameraSystem::update(float delta)
             yaw = 359.0f;
         }
 
+        /*
+        Info for maths:
+        https://math.stackexchange.com/questions/2618527/converting-from-yaw-pitch-roll-to-vector
+        */
+
         glm::vec3 direction;
         
-        direction.x = cos(glm::radians(static_cast<float>(pitch))) * cos(glm::radians(static_cast<float>(yaw)));
-        direction.y = sin(glm::radians(static_cast<float>(yaw)));
-        direction.z = sin(glm::radians(static_cast<float>(pitch))) * cos(glm::radians(static_cast<float>(yaw)));
+        direction.x = cos(glm::radians(static_cast<float>(yaw))) * cos(glm::radians(static_cast<float>(pitch)));
+        direction.y = sin(glm::radians(static_cast<float>(yaw))) * cos(glm::radians(static_cast<float>(pitch)));
+        direction.z = sin(glm::radians(static_cast<float>(pitch)));
+
         m_scene->m_ActiveCamera.direction = glm::normalize(direction);
         m_scene->m_ActiveCamera.pitch = pitch;
         m_scene->m_ActiveCamera.yaw = yaw;
