@@ -12,10 +12,16 @@ int main()
     EntityFactor Factor(&SceneObject);
     Entity Grid = Factor.createGrid();
 
+    /*
     std::vector<std::string> vikingRoomTextureFilepaths;
     vikingRoomTextureFilepaths.push_back("../../textures/viking_room.png");
     Entity vikingRoom = Factor.createOBJMesh("../../models/viking_room.obj", vikingRoomTextureFilepaths);
+    */
     
+    std::vector<std::string> cityTextureFilepaths;
+    cityTextureFilepaths.push_back("../../textures/citytokio.png");
+    Entity city = Factor.createOBJMesh("../../models/citytokio.obj", cityTextureFilepaths);
+
     /* Create Camera */
     CameraComponent Camera;
     Camera.focalLength = 45.0f;

@@ -101,3 +101,38 @@ void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponen
     memcpy(context.uniformBufferMapped.at(sceneType)[context.currentFrame], &sceneUBO, sizeof(sceneUBO));
     memcpy(context.uniformBufferMapped.at(objectType)[context.currentFrame], &objectUBO, sizeof(objectUBO));
 };
+
+// TODO This whole function needs redoing or something
+std::pair<std::vector<Vertex>, std::vector<uint32_t>> layoutMeshesForVertexBuffer(vulkanContext& context, Scene* scene)
+{
+    context.meshCount = 0;
+    uint32_t firstVertex = 0;
+    uint32_t firstIndex = 0;
+    std::vector<Vertex> meshData;
+    std::vector<uint32_t> indicesData;
+    uint32_t indexOffset = 0;
+    for (auto& [entityID, mesh] : scene->m_MeshComponents)
+    {
+        context.meshCount++;
+        mesh.ID = context.meshCount;
+        for (Vertex& vertex : mesh.vertices)
+        {
+            meshData.push_back(vertex);
+        };
+        mesh.details.firstVertex = firstVertex;
+        firstVertex += mesh.verticesCount;
+
+        for (uint32_t& index : mesh.indices)
+        {
+            indicesData.push_back((index + indexOffset));
+        };
+        indexOffset += mesh.verticesCount;
+        mesh.details.firstIndex = firstIndex;
+        firstIndex = firstIndex + mesh.indicesCount;
+    };
+    
+    std::pair<std::vector<Vertex>, std::vector<uint32_t>> data;
+    data.first = meshData;
+    data.second = indicesData;
+    return data;
+};

@@ -60,70 +60,36 @@ Struct:
         be using later. 
 
 TODO List:
-UniformBuffer
-    Decide how I want to handle this. Each shader will also need a
-    UniformBuffer for the Model, View, Projections matriex for the Camera and Positions.
-    Would be nice if I could add an unquire strct for each shader to be able to pass
-    textures and global shader properties.
 
-    When creating the shader, could be a good idea to create an unquire descriptor set and
-    layout. Based on connected Components to the shader. Like TextureComponents?
-
-TextureComponent
-    Stores the needed information to read a image.
-    Will need to add a way to attach a TextureComponent to a ShaderComponent.
-    Will also need to add the backend functions for this to work.
-
-CameraSystem
-    System for processing the Mouse and Keyboard inputs and transforms the active Camera.
-    Mainly in the style of Arcball Camera. Would be nice to be able to switch to different
-    camera movement styles like First Person Shooter style camera.
-
-Texture Loader
-    Reads an image into the CPU.
-
-Create Basic Shapes
-    Functions for creating basic Mesh Objects like Cube, Card, Sphere.
-
-DearImGui
-    Need to setup the backend to support DeadImGUI.
-    Create an simple UI to manage the Scene Data.
-    Scene Tree / Graph.
-    Component Editor. Allow editing of Position, Rotations of Meshes.
-    Debug Overlays. FPS, Frametimes, CameraPosition.
+Clean up
+    The applications keeps crashing on exit because 
+    we haven't been tidying up our memory and 
+    objects before closing the app.
 
 Compute
     Look into how to get the compute pipeline working
     and thinking about using it for the boids Physics
     system. 
 
+Refactor
+    There is loads of todos around the code base that 
+    needs addressing and parts of the loading into engine
+    needs improving. If we want to keep this as a engine for 
+    long term then we should really take another looking
+    at how we manage data on the gpu and making sure that 
+    we only sure / store the unquire information that is 
+    required. Once this is sorted we could then start 
+    looking at how to add Entities into scene while 
+    in the main loop instead of start time only.
 
-Descriptors Plan
+Bugs
+    Creating a Entity for the Viking Room and City models
+    only the viking room model is displayed in the scene.
 
-1. Create Descriptors Layouts
-2. Tell the GraphicPipeline What our Layout looks like
-3. Create a Descriptors Pool based off the Size of the Descriptors Sets Layout. 
-    This will be used to allocate memory for our Shader?? i think...
-4. Then we create the actual Descriptors Sets to be used in the Shader.
-    I believe at this point we actual point the Descriptors Sets to the
-    data to use as well.
+Boid System / Class / Object / Thing
+    each boid is just an transforms and a direction vector
+    each frame we take the Position and move it by the vector.
+    Each frame we calculate the direction base of a computer
+    shader that work on a data set of Position and directions of
+    each boid.  
 
-Need a function to create descriptor layouts based
-ofd data we want to find it. e.g. Different uniformBuffers like camera transformations,
-model transformations, global lighting values, texture samplers, ...
-
-Descriptors pools. I don't really understand this part at all.
-
-Split With Common, Model, Shader?
-
-SceneUniformBuffer <-----> Set 0
-vec3 view
-vec3 proj
-sampler _sampler
-
-ObjectUniformBuffer <-----> Set 1
-vec3 modelTransforms
-...
-
-TextureUniformBuffer <-----> Set 2
-texture _texture

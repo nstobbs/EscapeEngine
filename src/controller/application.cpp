@@ -65,33 +65,9 @@ void Application::startUp()
     /* All MeshComponents should be setup
     before creating the VertexBuffers */
     // Move this into it's own functoin
-    m_vulkanContext.meshCount = 0;
-    uint32_t firstVertex = 0;
-    uint32_t firstIndex = 0;
-    std::vector<Vertex> meshData;
-    std::vector<uint32_t> indicesData;
-    uint32_t indexOffset = 0;
-    for (auto& [entityID, mesh] : m_Scene->m_MeshComponents)
-    {
-        m_vulkanContext.meshCount++;
-        mesh.ID = m_vulkanContext.meshCount;
-        for (Vertex& vertex : mesh.vertices)
-        {
-            meshData.push_back(vertex);
-        };
-        mesh.details.firstVertex = firstVertex;
-        firstVertex = firstVertex + mesh.verticesCount;
-
-        for (uint32_t& index : mesh.indices)
-        {
-            indicesData.push_back((index + indexOffset));
-        };
-        indexOffset += mesh.verticesCount;
-        mesh.details.firstIndex = firstIndex;
-        firstIndex = firstIndex + mesh.indicesCount;
-    };
-    createVertexBuffer(m_vulkanContext, meshData);
-    createIndexBuffer(m_vulkanContext, indicesData);
+    auto data = layoutMeshesForVertexBuffer(m_vulkanContext, m_Scene);
+    createVertexBuffer(m_vulkanContext, data.first);
+    createIndexBuffer(m_vulkanContext, data.second);
 
     /* Uniform Buffers and Textures */
     //createUniformBuffer(m_vulkanContext, sizeof(UniformBufferObject)); // OLD
@@ -120,15 +96,16 @@ void Application::loop()
     //TODO Double check the timing maths here 
     while(!glfwWindowShouldClose(m_window))
     {
+        // Start Timer
         auto start = std::chrono::high_resolution_clock::now();
 
         glfwPollEvents();
         renderSystem.update();
-        cameraSystem.update(delta); // crash when it's placed before the renderSystem ??
+        cameraSystem.update(); // crash when it's placed before the renderSystem ??
+
 
         auto end = std::chrono::high_resolution_clock::now();
         delta = std::chrono::duration<float, std::chrono::seconds::period>(end - start).count();
-        int fps = static_cast<int>(1 / delta);
         //std::cout << "frame timing: " << delta << std::endl;
         //std::cout << "framerate: " << fps << std::endl;
     }

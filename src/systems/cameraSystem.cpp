@@ -17,11 +17,14 @@ void CameraSystem::start()
     lastX = static_cast<double>(width) / 2.0;
     lastY = static_cast<double>(height) / 2.0;
 
+    pitch = asin(m_scene->m_ActiveCamera.direction.y);
+    yaw = atan2(m_scene->m_ActiveCamera.direction.x, m_scene->m_ActiveCamera.direction.z);
+
     m_scene->m_ActiveCamera.pitch = pitch;
     m_scene->m_ActiveCamera.yaw = yaw;
 };
 
-void CameraSystem::update(float delta)
+void CameraSystem::update()
 {   
     
     /* KeyBoard Input */

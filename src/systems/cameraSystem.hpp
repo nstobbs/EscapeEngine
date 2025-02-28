@@ -9,15 +9,15 @@ class CameraSystem
     public:
         CameraSystem(Scene* scene, GLFWwindow* window);
         void start();
-        void update(float delta);
+        void update();
         
     private:
         Scene* m_scene;
         GLFWwindow* m_window;
         float cameraSpeed = 0.001f;
-        float mouseSen = 0.05f;
+        float mouseSen = 0.1f;
         float lensSpeed = 0.01f; 
-        double lastX, lastY; // TODO Set this to the center of the Window size at creations instead of this.
+        double lastX, lastY;
 
         double yaw = -90.0f;
         double pitch = 0.0f;

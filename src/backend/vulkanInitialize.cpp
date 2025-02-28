@@ -932,7 +932,7 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size());
     poolInfo.pPoolSizes = poolSize.data();
-    poolInfo.maxSets = static_cast<uint32_t>(8 * MAX_FRAMES_IN_FLIGHT); //TODO find out how many max sets we need.
+    poolInfo.maxSets = static_cast<uint32_t>(20 * MAX_FRAMES_IN_FLIGHT); //TODO find out how many max sets we need.
     poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     auto result = vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &context.descriptorPool);
