@@ -136,9 +136,9 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surfa
     int i = 0;
     for (const auto& queueFamily : queueFamilies)
     {
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
         {
-            indices.graphicsFamily = i;
+            indices.graphicsAndComputeFamily = i;
         }
 
         VkBool32 presentSupport = false;
@@ -184,7 +184,8 @@ void createLogicalDevice(vulkanContext& context)
     QueueFamilyIndices indices = findQueueFamilies(context.physicalDevice, context.surface);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsAndComputeFamily.value(),
+                                              indices.presentFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies)
@@ -217,10 +218,8 @@ void createLogicalDevice(vulkanContext& context)
         createInfo.enabledLayerCount = 0;
     }
 
-    if (vkCreateDevice(context.physicalDevice, &createInfo, nullptr, &context.device) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE LOGICAL DEVICE.");
-    }
+    auto result = vkCreateDevice(context.physicalDevice, &createInfo, nullptr, &context.device);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Logical Device");
 
     /* Check Limits and Print to Terminal*/
     VkPhysicalDeviceProperties properties;
@@ -231,7 +230,7 @@ void createLogicalDevice(vulkanContext& context)
     std::cout << "maxDescriptorSetUniformBuffers: " << deviceLimits.maxDescriptorSetUniformBuffers << std::endl;
 
 
-    vkGetDeviceQueue(context.device, indices.graphicsFamily.value(), 0, &context.graphicQueue);
+    vkGetDeviceQueue(context.device, indices.graphicsAndComputeFamily.value(), 0, &context.graphicQueue);
     vkGetDeviceQueue(context.device, indices.presentFamily.value(), 0, &context.presentQueue);
     context.familyIndices = indices;
 };
@@ -264,9 +263,9 @@ void createSwapChain(vulkanContext& context, GLFWwindow* window)
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     QueueFamilyIndices indices = findQueueFamilies(context.physicalDevice, context.surface);
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    uint32_t queueFamilyIndices[] = {indices.graphicsAndComputeFamily.value(), indices.presentFamily.value()};
 
-    if (indices.graphicsFamily != indices.presentFamily)
+    if (indices.graphicsAndComputeFamily != indices.presentFamily)
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
@@ -464,6 +463,7 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
 
     throw std::runtime_error("{ERROR} FAILED TO FIND SUPPORTED FORMAT");
 };
+
 //TODO Make this better
 void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 {
@@ -478,8 +478,8 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             VkDescriptorSetLayoutBinding sceneBufferBinding{};
             sceneBufferBinding.binding = 0;
             sceneBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            sceneBufferBinding.descriptorCount = 1; //?? TODO check this
-            sceneBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            sceneBufferBinding.descriptorCount = 1;
+            sceneBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
             sceneBufferBinding.pImmutableSamplers = nullptr;
 
             /* Object UBO DescriptorSetLayout 1 */
@@ -487,7 +487,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             objectBufferBinding.binding = 0;
             objectBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             objectBufferBinding.descriptorCount = 1;
-            objectBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            objectBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
             objectBufferBinding.pImmutableSamplers = nullptr;
             
             // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/DescriptorSets.1pp.pdf
@@ -542,7 +542,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
     texturesBinding.descriptorCount = context.textureCount;
     texturesBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
     texturesBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    texturesBinding.pImmutableSamplers = &context.textureSampler; //TODO Not sure if we need to have the sampler here? double check this 
+    texturesBinding.pImmutableSamplers = &context.textureSampler; 
     textureBindings.push_back(texturesBinding);
 
     /* Texture  DescriptorSetLayout 1 */
@@ -564,7 +564,10 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
     for (auto& ent : scene->m_Entities)
     {
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
-        {
+        {   
+            //TODO add a block to stop entities with a boidsComponents
+            // to have a graphic pipeline created like this .
+
             /* Hopefully this wont be needed ever soon */
             VkPushConstantRange  textureIndexPushRange{};
             textureIndexPushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -588,7 +591,6 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             pipelineLayoutInfo.pSetLayouts = tempLayout.data();
             pipelineLayoutInfo.pushConstantRangeCount = 1;
             pipelineLayoutInfo.pPushConstantRanges = &textureIndexPushRange;
-            //pipelineLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV; //TODO TRYING OUT
             
             /*This will need to be unique  for each entity */
             VkPipelineLayout pipelineLayout;
@@ -750,7 +752,6 @@ void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)
     vkDestroyShaderModule(context.device, fragShaderModule, nullptr);
 };
 
-// TODO ADD SUPPORT FOR COMPUTE Command Pool :)
 void createCommandPool(vulkanContext& context)
 {
     QueueFamilyIndices QueueFamilyIndices = findQueueFamilies(context.physicalDevice, context.surface);
@@ -758,13 +759,10 @@ void createCommandPool(vulkanContext& context)
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    poolInfo.queueFamilyIndex = QueueFamilyIndices.graphicsFamily.value();
+    poolInfo.queueFamilyIndex = QueueFamilyIndices.graphicsAndComputeFamily.value();
 
-    if (vkCreateCommandPool(context.device, &poolInfo, nullptr, &context.commandPool) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE COMMAND POOL.");
-    }
-
+    auto result = vkCreateCommandPool(context.device, &poolInfo, nullptr, &context.commandPool);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Command Pool");
 };
 
 void createDepthResources(vulkanContext& context)

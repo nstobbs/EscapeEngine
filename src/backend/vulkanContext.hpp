@@ -18,13 +18,12 @@ const int MAX_TEXTURE_COUNT = 2048;
 
 struct QueueFamilyIndices
 {
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> computeFamily; //TODO Add compute Family Supports
+    std::optional<uint32_t> graphicsAndComputeFamily;
     std::optional<uint32_t> presentFamily;
 
     bool isComplete()
     {
-        return graphicsFamily.has_value() && presentFamily.has_value();
+        return graphicsAndComputeFamily.has_value() && presentFamily.has_value();
     }
 };
 
@@ -54,6 +53,7 @@ struct vulkanContext
     /* Commands Related */
     VkQueue graphicQueue;
     VkQueue presentQueue;
+    VkQueue computeQueue;
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
 

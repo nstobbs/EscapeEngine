@@ -91,5 +91,26 @@ Boid System / Class / Object / Thing
     each frame we take the Position and move it by the vector.
     Each frame we calculate the direction base of a computer
     shader that work on a data set of Position and directions of
-    each boid.  
+    each boid.
 
+Boids TODO List
+    User Create an BoidsWorld* Entity. *TmpName
+        This Entity store all of the information about the world the
+        boids live. Like the bounding box, Settings / Thresholds,
+        MeshComponent.
+    BoidsComponent
+        Sim Settings
+        Bounding Box
+
+    BoidSystem
+        Runs on (Entities that have a MeshComponent, BoidsComponent, TransformsComponent)
+        Runs"submits" the Compute Shader to compute update the 
+        position and direction of each boid.
+
+    Update RenderSystem;
+        Add a way for the renderSystem to handle the rendering
+        of the boids.  
+
+    Create a Storage Buffer with Boids Position, Direction data.
+    Feed this Data into Compute Shader and calculate the new Position and Direction.
+    

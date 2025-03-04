@@ -14,7 +14,7 @@ void initializeImgui(vulkanContext &context, GLFWwindow *pWindow)
     imguiInitInfo.Instance = context.instance;
     imguiInitInfo.PhysicalDevice = context.physicalDevice;
     imguiInitInfo.Device = context.device;
-    imguiInitInfo.QueueFamily = context.familyIndices.graphicsFamily.value();
+    imguiInitInfo.QueueFamily = context.familyIndices.graphicsAndComputeFamily.value();
     imguiInitInfo.Queue = context.graphicQueue;
     imguiInitInfo.DescriptorPool = context.descriptorPool;
     imguiInitInfo.RenderPass = context.renderPass;

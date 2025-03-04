@@ -64,8 +64,7 @@ void Application::startUp()
 
     /* All MeshComponents should be setup
     before creating the VertexBuffers */
-    // Move this into it's own functoin
-    auto data = layoutMeshesForVertexBuffer(m_vulkanContext, m_Scene);
+    auto data = layoutMeshesForVertexBuffer(m_vulkanContext, m_Scene); // TODO Check this works with more than one mesh
     createVertexBuffer(m_vulkanContext, data.first);
     createIndexBuffer(m_vulkanContext, data.second);
 

@@ -52,6 +52,9 @@ add_executable(${PROJECT_NAME} src/main.cpp
 					src/components/transformComponent.hpp
 					src/components/textureComponent.hpp
 					src/components/cameraComponent.hpp
+					src/components/boidsComponent.hpp
+					src/systems/boidsSystem.cpp
+					src/systems/boidsSystem.hpp
 					src/systems/renderSystem.cpp
 					src/systems/renderSystem.hpp
 					src/systems/cameraSystem.cpp
