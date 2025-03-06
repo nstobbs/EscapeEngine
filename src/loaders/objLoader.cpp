@@ -36,4 +36,5 @@ void objLoader(MeshComponent& mesh)
     }
 
     mesh.indicesCount = static_cast<uint32_t>(mesh.indices.size());
+    mesh.verticesCount = static_cast<uint32_t>(mesh.vertices.size());
 };
