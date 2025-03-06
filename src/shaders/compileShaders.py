@@ -12,10 +12,14 @@ Requirements:
     Set System Environment Variable "GLSLC_PATH" to Vulkan's SDK GLSL Compiler.
         Can be found near "{VulkanSDK Install Location}/x.x.xxx/Bin/glslc"
 """
-try:
-    GLSLC_PATH = os.environ["GLSLC_PATH"]
-except KeyError:
-    sys.exit("GLSLC_PATH was't set!")
+
+if sys.platform == "linux":
+    GLSLC_PATH = "glslc"
+else:
+    try:
+        GLSLC_PATH = os.environ["GLSLC_PATH"]
+    except KeyError:
+        sys.exit("GLSLC_PATH was't set!")
 
 shaderPaths = []
 for file in os.listdir("./"):

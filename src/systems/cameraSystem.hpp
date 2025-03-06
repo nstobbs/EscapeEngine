@@ -9,12 +9,12 @@ class CameraSystem
     public:
         CameraSystem(Scene* scene, GLFWwindow* window);
         void start();
-        void update();
+        void update(float delta);
         
     private:
         Scene* m_scene;
         GLFWwindow* m_window;
-        float cameraSpeed = 0.001f;
+        float cameraSpeed = 0.05f;
         float mouseSen = 0.1f;
         float lensSpeed = 0.01f; 
         double lastX, lastY;

@@ -24,32 +24,32 @@ void CameraSystem::start()
     m_scene->m_ActiveCamera.yaw = yaw;
 };
 
-void CameraSystem::update()
+void CameraSystem::update(float delta)
 {   
-    
+    float framerateAdjustment = delta * 100.0f;
     /* KeyBoard Input */
     /* Forward */
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position += (m_scene->m_ActiveCamera.direction * cameraSpeed);
+        m_scene->m_ActiveCamera.position += (m_scene->m_ActiveCamera.direction * cameraSpeed) * framerateAdjustment;
     };
 
     /* Left */
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.direction, m_scene->m_ActiveCamera.up)) * cameraSpeed;
+        m_scene->m_ActiveCamera.position -= glm::normalize(glm::cross(m_scene->m_ActiveCamera.direction, m_scene->m_ActiveCamera.up)) * cameraSpeed * framerateAdjustment;
     };
 
     /* Backward */
     if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position -= (m_scene->m_ActiveCamera.direction * cameraSpeed);
+        m_scene->m_ActiveCamera.position -= (m_scene->m_ActiveCamera.direction * cameraSpeed) * framerateAdjustment;
     };
 
     /* Right */
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_TRUE)
     {
-        m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(m_scene->m_ActiveCamera.direction, m_scene->m_ActiveCamera.up)) * cameraSpeed;
+        m_scene->m_ActiveCamera.position += glm::normalize(glm::cross(m_scene->m_ActiveCamera.direction, m_scene->m_ActiveCamera.up)) * cameraSpeed * framerateAdjustment;
     };
 
     /* Mouse Input */

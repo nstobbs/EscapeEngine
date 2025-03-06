@@ -100,11 +100,11 @@ void Application::loop()
 
         glfwPollEvents();
         renderSystem.update();
-        cameraSystem.update(); // crash when it's placed before the renderSystem ??
-
 
         auto end = std::chrono::high_resolution_clock::now();
         delta = std::chrono::duration<float, std::chrono::seconds::period>(end - start).count();
+        cameraSystem.update(delta); // crash when it's placed before the renderSystem ??
+
         //std::cout << "frame timing: " << delta << std::endl;
         //std::cout << "framerate: " << fps << std::endl;
     }
