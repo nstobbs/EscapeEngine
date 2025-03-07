@@ -31,14 +31,34 @@ void BoidsSystem::start()
         boidsSims = m_boidsSims;
     };
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
     // Starting Prepping Vulkan for the Boids Sims
     for (auto sim : m_boidsSims)
     {
+        BoidsComponent world = m_scene->m_BoidsComponents.at(sim);
+        std::vector<Boid> boids;
         // 1. Generate Random Boid Data within Bounding Box
             // Position vec3
             // Direction vec3
-        // 2. Upload This Data to the GPU 
+        std::uniform_real_distribution<float> widthDistr(-world.width, world.width);
+        std::uniform_real_distribution<float> heightDistr(-world.height, world.height);
+        std::uniform_real_distribution<float> depthDistr(-world.depth, world.depth);
+        for (int i = 0; i < world.boidsCount; i++)
+        {
+            Boid b;
+            b.pos = glm::vec3(widthDistr(gen), heightDistr(gen), depthDistr(gen));
+            b.dir = glm::vec3(widthDistr(gen), heightDistr(gen), depthDistr(gen));
+            boids.push_back(b);
+        };
+
+        // 2. Upload This Data to the GPU
+        createBoidsStorageBuffer(m_context, boids);
+
         // 3. Create the Graphic Pipeline AND Compute Pipeline Layouts
+        
+
         // 4. Create the Pipelines
 
     };

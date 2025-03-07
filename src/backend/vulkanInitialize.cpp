@@ -474,7 +474,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             std::vector<VkDescriptorSetLayoutBinding> bindings;
             ShaderComponent currentShader = scene->m_ShaderComponents.at(ent);
             
-            /* Scene UBO with Texture Sampler  DescriptorSetLayout 0 */
+            /* Scene UBO  DescriptorSetLayout 0 */
             VkDescriptorSetLayoutBinding sceneBufferBinding{};
             sceneBufferBinding.binding = 0;
             sceneBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -568,7 +568,6 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             //TODO add a block to stop entities with a boidsComponents
             // to have a graphic pipeline created like this .
 
-            /* Hopefully this wont be needed ever soon */
             VkPushConstantRange  textureIndexPushRange{};
             textureIndexPushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             textureIndexPushRange.offset = 0;
@@ -592,7 +591,6 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             pipelineLayoutInfo.pushConstantRangeCount = 1;
             pipelineLayoutInfo.pPushConstantRanges = &textureIndexPushRange;
             
-            /*This will need to be unique  for each entity */
             VkPipelineLayout pipelineLayout;
             ASSERT_VK_RESULT(vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout), VK_SUCCESS, "Graphics Pipeline Layout");
             context.pipelineLayouts[ent] = pipelineLayout;
@@ -802,94 +800,6 @@ void createFramebuffers(vulkanContext& context)
             throw std::runtime_error("{ERROR} FAILED TO CREATE FRAMEBUFFERS.");
         };
     };
-};
-
-void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInput)
-{
-    VkDeviceSize bufferSize = sizeof(verticesInput[0]) * verticesInput.size();
-
-    /* Staging Buffer */
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, verticesInput.data(), (size_t) bufferSize);
-    vkUnmapMemory(context.device, stagingBufferMemory);
-
-    /* Transfer Stage Buffer to Stage Buffer */
-    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, context.vertexBuffer, context.vertexBufferMemory);
-    copyBuffer(context, stagingBuffer, context.vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
-    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
-};
-
-void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput)
-{
-    VkDeviceSize bufferSize = sizeof(indicesInput[0]) * indicesInput.size();
-
-    /* Staging Buffer */
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-
-    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                 stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indicesInput.data(), (size_t) bufferSize);
-    vkUnmapMemory(context.device, stagingBufferMemory);
-
-    /* Transfer Stage Buffer to Stage Buffer */
-    createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, context.indexBuffer, context.indexBufferMemory);
-    copyBuffer(context, stagingBuffer, context.indexBuffer, bufferSize);
-
-    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
-    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
-};
-
-/* Should be in vulkanBuffer.hpp seems pretty random being here?*/
-void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceSize bufferSize)
-{
-    std::vector<VkBuffer> buffers;
-    std::vector<VkDeviceMemory> bufferMemorys;
-    std::vector<void*> bufferMappings;
-   
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        VkBuffer buffer;
-        VkDeviceMemory bufferMemory;
-        void* bufferMapping;
-
-        createBuffer(context, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     buffer, bufferMemory);
-        vkMapMemory(context.device, bufferMemory, 0, bufferSize, 0, &bufferMapping);
-
-        buffers.push_back(buffer);
-        bufferMemorys.push_back(bufferMemory);
-        bufferMappings.push_back(bufferMapping);
-    };
-
-    if (layout == sceneType)
-    {
-        context.uniformBuffers[sceneType] = buffers;
-        context.uniformBuffersMemory[sceneType] = bufferMemorys;
-        context.uniformBufferMapped[sceneType] = bufferMappings;
-    } 
-    else if (layout  == objectType)
-    {
-        context.uniformBuffers[objectType] = buffers;
-        context.uniformBuffersMemory[objectType] = bufferMemorys;
-        context.uniformBufferMapped[objectType] = bufferMappings;
-    }
 };
 
 void createDescriptorPool(vulkanContext& context, Scene* scene)

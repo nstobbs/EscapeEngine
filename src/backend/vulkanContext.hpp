@@ -118,7 +118,10 @@ struct vulkanContext
     std::vector<VkDeviceMemory> textureImageMemorys;
     std::vector<VkImageView> textureImageViews;
     VkSampler textureSampler; // We need more if we use different sampler settings. TODO ADD SETTINGS TO USE MORE THAN ONE
-
+    
+    /* ############ Boids Component ############*/
+    std::vector<VkBuffer> boidsBuffers;
+    std::vector<VkDeviceMemory> boidsBufferMemorys;
 };
 
 #endif

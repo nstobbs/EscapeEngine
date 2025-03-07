@@ -34,3 +34,17 @@ VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device
 
     return shaderModule;
 };
+
+void createBoidsComputePipeline(vulkanContext& context)
+{
+    auto computeShaderCode = readShaderSourceFile("../../src/shaders/BoidsComp.spv"); // TODO add path
+    VkShaderModule computeShaderModule = createShaderModule(computeShaderCode, context.device);
+
+    VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
+    computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    computeShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    computeShaderStageInfo.module = computeShaderModule;
+    computeShaderStageInfo.pName = "main";
+
+    //TODO NEED TO PREP A DESCRIPTOR SET WITH Storage Buffers
+};

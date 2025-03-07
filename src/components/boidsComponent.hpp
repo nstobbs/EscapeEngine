@@ -22,8 +22,8 @@ struct BoidsComponent
     float sim_cohesion = 0.5f;
 
     // Bounding Box 
-    float height = 0.5f;
-    float width = 1.0f;
+    float height = 1.0f;
+    float width = 1.5f;
     float depth = 1.0f;
 };
 

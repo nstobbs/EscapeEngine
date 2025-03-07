@@ -35,10 +35,6 @@ void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent);
 void createCommandPool(vulkanContext& context);
 void createDepthResources(vulkanContext& context);
 void createFramebuffers(vulkanContext& context);
-// Could move into vulkanBuffer.hpp
-void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInput);
-void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput);
-void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceSize bufferSize);
 
 void createDescriptorPool(vulkanContext& context, Scene* scene);
 void createDescriptorSets(vulkanContext& context, Scene* scene);

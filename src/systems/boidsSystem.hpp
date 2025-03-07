@@ -3,6 +3,9 @@
 
 #include "../config.hpp"
 #include "../controller/scene.hpp"
+#include "../backend/vulkanBuffer.hpp"
+
+#include <random>
 
 class BoidsSystem
 {

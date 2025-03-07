@@ -31,5 +31,9 @@ void copyBuffer(vulkanContext& context,VkBuffer srcBuffer, VkBuffer dstBuffer, V
 void copyBufferToImage(vulkanContext& context, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 void updateUniformBuffer(vulkanContext& context, Scene* scene, TransformComponent& transform);
 std::pair<std::vector<Vertex>, std::vector<uint32_t>> layoutMeshesForVertexBuffer(vulkanContext& context, Scene* scene);
+void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInput);
+void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput);
+void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceSize bufferSize);
+void createBoidsStorageBuffer(vulkanContext& context, std::vector<Boid>& boids);
 
 #endif
