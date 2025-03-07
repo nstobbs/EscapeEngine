@@ -35,6 +35,43 @@ VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device
     return shaderModule;
 };
 
+void createBoidsDescriptorSetLayout(vulkanContext& context)
+{
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+    // Raw Boids Data Binding
+    VkDescriptorSetLayoutBinding boidsBinding{};
+    boidsBinding.binding = 0;
+    boidsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    boidsBinding.descriptorCount = 1;
+    boidsBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | 
+                              VK_SHADER_STAGE_VERTEX_BIT |
+                              VK_SHADER_STAGE_FRAGMENT_BIT;
+    boidsBinding.pImmutableSamplers = nullptr;
+    bindings.push_back(boidsBinding);
+
+    // Boids Sim Parameters Binding
+    VkDescriptorSetLayoutBinding simBinding{};
+    simBinding.binding = 1;
+    simBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    simBinding.descriptorCount = 1;
+    simBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT |
+                            VK_SHADER_STAGE_VERTEX_BIT |
+                            VK_SHADER_STAGE_FRAGMENT_BIT;
+    simBinding.pImmutableSamplers = nullptr;
+    bindings.push_back(simBinding);
+
+    VkDescriptorSetLayout layout;
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    layoutInfo.pBindings = bindings.data();
+
+    auto result = vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &layout);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor Layout");
+    context.boidsDescriptorsLayout = layout;
+};
+
 void createBoidsComputePipeline(vulkanContext& context)
 {
     auto computeShaderCode = readShaderSourceFile("../../src/shaders/BoidsComp.spv"); // TODO add path
@@ -46,5 +83,23 @@ void createBoidsComputePipeline(vulkanContext& context)
     computeShaderStageInfo.module = computeShaderModule;
     computeShaderStageInfo.pName = "main";
 
-    //TODO NEED TO PREP A DESCRIPTOR SET WITH Storage Buffers
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &context.boidsDescriptorsLayout;
+
+    VkPipelineLayout pipelineLayout;
+    auto result = vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Pipeline Layout");
+    context.boidsPipelineLayout = pipelineLayout;
+
+    VkComputePipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineInfo.layout = context.boidsPipelineLayout;
+    pipelineInfo.stage = computeShaderStageInfo;
+
+    VkPipeline pipeline;
+    result = vkCreateComputePipelines(context.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Compute Pipeline");
+    context.boidsPipeline = pipeline;
 };

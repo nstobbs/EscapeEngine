@@ -122,6 +122,9 @@ struct vulkanContext
     /* ############ Boids Component ############*/
     std::vector<VkBuffer> boidsBuffers;
     std::vector<VkDeviceMemory> boidsBufferMemorys;
+    VkDescriptorSetLayout boidsDescriptorsLayout;
+    VkPipelineLayout boidsPipelineLayout;
+    VkPipeline boidsPipeline;
 };
 
 #endif

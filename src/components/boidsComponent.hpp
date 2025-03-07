@@ -33,4 +33,16 @@ struct Boid
     glm::vec3 dir;
 };
 
+//TODO Could Maybe Do this a better but fuck it
+
+struct BoidsSim
+{
+    float sim_separation;
+    float sim_alignment;
+    float sim_cohesion;
+    float height;
+    float width;
+    float depth;
+};
+
 #endif

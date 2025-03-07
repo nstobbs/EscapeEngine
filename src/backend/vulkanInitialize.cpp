@@ -493,7 +493,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/DescriptorSets.1pp.pdf
 
             /* Set == 0*/
-            std::vector<VkDescriptorSetLayout> layout;
+            std::vector<VkDescriptorSetLayout> layout; // TODO is then even needed???
 
             VkDescriptorSetLayout sceneDescriptorLayout;
             std::vector<VkDescriptorSetLayoutBinding> sceneBindings;
