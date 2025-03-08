@@ -222,6 +222,12 @@ void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceS
         context.uniformBuffersMemory[objectType] = bufferMemorys;
         context.uniformBufferMapped[objectType] = bufferMappings;
     }
+    else if (layout == boidType)
+    {
+        context.boidsBuffersUBO = buffers;
+        context.boidsBufferMemorysUBO = bufferMemorys;
+        context.boidsBufferMappingsUBO = bufferMappings;
+    }
 };
 
 void createBoidsStorageBuffer(vulkanContext& context, std::vector<Boid>& boids)
@@ -254,4 +260,25 @@ void createBoidsStorageBuffer(vulkanContext& context, std::vector<Boid>& boids)
 
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
     vkFreeMemory(context.device, stagingBufferMemory, nullptr);
+};
+
+void updateBoidsUniformBuffer(vulkanContext& context, BoidsComponent& data)
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    BoidsSim sim;
+    sim.sim_separation = data.sim_separation;
+    sim.sim_cohesion = data.sim_cohesion;
+    sim.sim_alignment = data.sim_alignment;
+    
+    sim.height = data.height;
+    sim.width = data.width;
+    sim.depth = data.depth;
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    sim.deltaTime = time;
+
+    memcpy(context.boidsBufferMappingsUBO[context.currentFrame], &sim, sizeof(BoidsSim));
 };

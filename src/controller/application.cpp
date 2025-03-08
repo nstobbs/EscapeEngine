@@ -69,7 +69,6 @@ void Application::startUp()
     createIndexBuffer(m_vulkanContext, data.second);
 
     /* Uniform Buffers and Textures */
-    //createUniformBuffer(m_vulkanContext, sizeof(UniformBufferObject)); // OLD
     createUniformBuffer(m_vulkanContext, sceneType, sizeof(SceneUniformBuffer));
     createUniformBuffer(m_vulkanContext, objectType, sizeof(ObjectUniformBuffer));
     createDescriptorPool(m_vulkanContext, m_Scene);

@@ -3,6 +3,7 @@
 
 #include "../config.hpp"
 #include "../controller/scene.hpp"
+#include "../backend/vulkanShader.hpp"
 #include "../backend/vulkanBuffer.hpp"
 
 #include <random>

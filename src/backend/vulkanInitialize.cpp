@@ -818,6 +818,17 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
     objectBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(sceneBufferPoolSize);
 
+    // Boids Descriptors
+    VkDescriptorPoolSize boidsBufferPoolSize{};
+    boidsBufferPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER; //TODO double check this
+    boidsBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSize.push_back(boidsBufferPoolSize);
+
+    VkDescriptorPoolSize simBufferPoolSize{};
+    simBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    simBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSize.push_back(simBufferPoolSize);
+
     VkDescriptorPoolSize imguiTexturesCombinedPoolSize{};
     imguiTexturesCombinedPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     imguiTexturesCombinedPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
@@ -857,9 +868,6 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
             ShaderComponent shader = scene->m_ShaderComponents.at(ent);
             int descriptorSetCount = static_cast<int>(MAX_FRAMES_IN_FLIGHT * context.descriptorSetLayoutsLists.at(ent).size());
 
-            /* TODO I'm stuck here again, i'm trying to alloc more that one descriptor set
-            per descriptor set layout here so I can see some of these descriptor sets for 
-            the frames in flight*/
             std::vector<VkDescriptorSetLayout> layouts;
             for (size_t x = 0; x < MAX_FRAMES_IN_FLIGHT; x++)
             {
@@ -1025,5 +1033,66 @@ void createSyncObjects(vulkanContext& context)
         {
             throw std::runtime_error("{ERRRO} FAILED TO CREATE SYNC OBJECTS");
         };
+    };
+};
+
+void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
+{
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = context.descriptorPool;
+    allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT * 2;
+    allocInfo.pSetLayouts = &context.boidsDescriptorsLayout;
+
+    std::vector<VkDescriptorSet> descriptorSets(MAX_FRAMES_IN_FLIGHT * 2);
+    auto result = vkAllocateDescriptorSets(context.device, &allocInfo, descriptorSets.data());
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Boids Descriptor Sets");
+
+    // find boid entity
+    Entity boidsEntity;
+    BoidsComponent boidsDetails;
+    for (auto ent : scene->m_Entities)
+    {   
+        auto found = scene->m_BoidsComponents.find(ent);
+        if (found != scene->m_BoidsComponents.end())
+        {
+            boidsEntity = ent;
+            boidsDetails = scene->m_BoidsComponents.at(ent);
+            break;
+        };
+    };
+
+    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        // relates to boids sim data UBOs
+        VkDescriptorBufferInfo boidsUBOBufferInfo{};
+        boidsUBOBufferInfo.buffer = context.boidsBuffersUBO[i];
+        boidsUBOBufferInfo.offset = 0;
+        boidsUBOBufferInfo.range = sizeof(BoidsSim);
+
+        VkDescriptorBufferInfo boidsBufferInfo{};
+        boidsBufferInfo.buffer = context.boidsBuffers[i];
+        boidsBufferInfo.offset = 0;
+        boidsBufferInfo.range = static_cast<uint32_t>(boidsDetails.boidsCount * sizeof(Boid));
+
+        VkWriteDescriptorSet boidsUBOWriteSet{};
+        boidsUBOWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        boidsUBOWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        boidsUBOWriteSet.descriptorCount = 1;
+        boidsUBOWriteSet.dstSet = descriptorSets[i];
+        boidsUBOWriteSet.dstBinding = 0;
+        boidsUBOWriteSet.dstArrayElement = 0;
+        boidsUBOWriteSet.pBufferInfo = &boidsUBOBufferInfo;
+
+        VkWriteDescriptorSet boidsWriteSet{};
+        boidsWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        boidsWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        boidsWriteSet.dstSet = descriptorSets[i+2];
+        boidsWriteSet.dstArrayElement = 0;
+        boidsWriteSet.pBufferInfo = &boidsBufferInfo;
+
+        vkUpdateDescriptorSets(context.device, 1 , &boidsUBOWriteSet, 0, nullptr);
+        vkUpdateDescriptorSets(context.device, 1 , &boidsWriteSet, 0, nullptr);
+        //TODO Move the descriptor sets from this function into context.
     };
 };

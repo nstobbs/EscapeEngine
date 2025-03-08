@@ -53,13 +53,18 @@ void BoidsSystem::start()
             boids.push_back(b);
         };
 
-        // 2. Upload This Data to the GPU
-        createBoidsStorageBuffer(m_context, boids);
-
-        // 3. Create the Graphic Pipeline AND Compute Pipeline Layouts
         
+        // 2. Create the Graphic Pipeline AND Compute Pipeline Layouts
+        createBoidsDescriptorSetLayout(m_context);
+        createBoidsComputePipeline(m_context);
 
-        // 4. Create the Pipelines
+        // 3. Upload This Data to the GPU
+        createBoidsStorageBuffer(m_context, boids);
+        createUniformBuffer(m_context, boidType, sizeof(BoidsSim));
+
+        // TODO the graphic pipeline for rendering should of been created at this point
+        
+        // 4. Create the DescriptorSets for just the Boids Sims
 
     };
 };

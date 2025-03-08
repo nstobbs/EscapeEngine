@@ -42,7 +42,7 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
     // Raw Boids Data Binding
     VkDescriptorSetLayoutBinding boidsBinding{};
     boidsBinding.binding = 0;
-    boidsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    boidsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     boidsBinding.descriptorCount = 1;
     boidsBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | 
                               VK_SHADER_STAGE_VERTEX_BIT |

@@ -35,5 +35,6 @@ void createVertexBuffer(vulkanContext& context, std::vector<Vertex>& verticesInp
 void createIndexBuffer(vulkanContext& context, std::vector<uint32_t>& indicesInput);
 void createUniformBuffer(vulkanContext& context, uniformLayout layout, VkDeviceSize bufferSize);
 void createBoidsStorageBuffer(vulkanContext& context, std::vector<Boid>& boids);
+void updateBoidsUniformBuffer(vulkanContext& context, BoidsComponent& data);
 
 #endif

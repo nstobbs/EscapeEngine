@@ -32,7 +32,8 @@ struct QueueFamilyIndices
 enum uniformLayout 
 {
     sceneType,
-    objectType
+    objectType,
+    boidType
 };
 
 struct vulkanContext
@@ -120,11 +121,20 @@ struct vulkanContext
     VkSampler textureSampler; // We need more if we use different sampler settings. TODO ADD SETTINGS TO USE MORE THAN ONE
     
     /* ############ Boids Component ############*/
-    std::vector<VkBuffer> boidsBuffers;
-    std::vector<VkDeviceMemory> boidsBufferMemorys;
     VkDescriptorSetLayout boidsDescriptorsLayout;
     VkPipelineLayout boidsPipelineLayout;
     VkPipeline boidsPipeline;
+
+    std::vector<VkBuffer> boidsBuffers;
+    std::vector<VkDeviceMemory> boidsBufferMemorys;
+    std::vector<VkDescriptorSet> boidsDescriptors;
+    
+
+    //Descriptor Sets
+    std::vector<VkDescriptorSet> boidsDescriptorsUBO;
+    std::vector<VkBuffer> boidsBuffersUBO;
+    std::vector<VkDeviceMemory> boidsBufferMemorysUBO;
+    std::vector<void*> boidsBufferMappingsUBO;
 };
 
 #endif

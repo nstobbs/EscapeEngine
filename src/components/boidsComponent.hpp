@@ -34,7 +34,6 @@ struct Boid
 };
 
 //TODO Could Maybe Do this a better but fuck it
-
 struct BoidsSim
 {
     float sim_separation;
@@ -43,6 +42,8 @@ struct BoidsSim
     float height;
     float width;
     float depth;
+
+    float deltaTime;
 };
 
 #endif
