@@ -16,7 +16,6 @@ void BoidsSystem::start()
         size_t resultShader = m_scene->m_ShaderComponents.count(ent);
         size_t resultTransform = m_scene->m_TransformComponents.count(ent);
         
-
         if (resultMesh != 0 && resultBoids != 0 && resultTransform != 0 && resultShader != 0)
         {
             if (m_scene->m_BoidsComponents.at(ent).boidsCount != 0)
@@ -76,20 +75,54 @@ void BoidsSystem::update()
     vkWaitForFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame],
             VK_TRUE, UINT64_MAX);
             
-            //TODO Just fix this lol, I know im about to write some hot trash here!!!
-            BoidsComponent currentSim;
-            for (auto ent : m_boidsSims)
-            {
-                currentSim = m_scene->m_BoidsComponents.at(ent);
-            };
+    //TODO Just fix this lol, I know im about to write some hot trash here!!!
+    BoidsComponent currentSim;
+    for (auto ent : m_boidsSims)
+    {
+        currentSim = m_scene->m_BoidsComponents.at(ent);
+    };
 
-            updateBoidsUniformBuffer(m_context, currentSim);
+    updateBoidsUniformBuffer(m_context, currentSim);
 
-            vkResetFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame]);
+    vkResetFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame]);
 
-            vkResetCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame], 0);
+    vkResetCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame], 0);
 
-            /* Start Command Buffer Recording */
-                
-            /* End Command Buffer Recording */
+    /* Start Command Buffer Recording */
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    auto result = vkBeginCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame], &beginInfo);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Begin Boids Compute Command Buffer");
+
+    vkCmdBindPipeline(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_context.boidsPipeline);
+
+    vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_context.boidsPipelineLayout, 0, 1, &m_context.boidsDescriptors[m_context.currentFrame], 0, nullptr);
+
+    vkCmdDispatch(m_context.boidsCommandBuffer[m_context.currentFrame], currentSim.boidsCount / 256, 1, 1);
+
+    result = vkEndCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame]);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Ending Boids Compute Command Buffer");
+    /* End Command Buffer Recording */
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &m_context.boidsCommandBuffer[m_context.currentFrame];
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &m_context.boidsFinishedSemaphores[m_context.currentFrame]; 
+    
+    result = vkQueueSubmit(m_context.computeQueue, 1, &submitInfo, m_context.boidsInFlightFences[m_context.currentFrame]);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Submit Boids Compute Command Buffer");
+
+    // TODO Need to do more research here
+    /* The issue here is that I dont't want to make an call to KHR to acquire an new image
+    since I believe this will create an issue where every other frame is the boids systems
+    then are main frame is render next. Instead might be better to do all of the command buffer
+    prep here then give it back to the context to render later in our renderSystem instead of
+    trying to display it here. Will need to double check that we can submit mult  commandbuffers
+    to one frame*/
+
 };
