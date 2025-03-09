@@ -5,6 +5,7 @@
 #include "../controller/scene.hpp"
 #include "../backend/vulkanShader.hpp"
 #include "../backend/vulkanBuffer.hpp"
+#include "../backend/vulkanInitialize.hpp"
 
 #include <random>
 

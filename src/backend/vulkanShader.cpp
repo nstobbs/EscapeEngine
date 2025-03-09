@@ -80,7 +80,7 @@ void createBoidsComputePipeline(vulkanContext& context)
     VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
     computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     computeShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    computeShaderStageInfo.module = computeShaderModule;
+    computeShaderStageInfo.module = computeShaderModule;createBoidsDescriptorSetLayout;
     computeShaderStageInfo.pName = "main";
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

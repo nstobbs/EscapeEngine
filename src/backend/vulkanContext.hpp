@@ -128,9 +128,14 @@ struct vulkanContext
     std::vector<VkBuffer> boidsBuffers;
     std::vector<VkDeviceMemory> boidsBufferMemorys;
     std::vector<VkDescriptorSet> boidsDescriptors;
-    
 
-    //Descriptor Sets
+    std::vector<VkCommandBuffer> boidsCommandBuffer;
+    
+    // Boids Compute SyncObjects
+    std::vector<VkFence> boidsInFlightFences;
+    std::vector<VkSemaphore> boidsFinishedSemaphores;
+
+    // Descriptor Sets
     std::vector<VkDescriptorSet> boidsDescriptorsUBO;
     std::vector<VkBuffer> boidsBuffersUBO;
     std::vector<VkDeviceMemory> boidsBufferMemorysUBO;

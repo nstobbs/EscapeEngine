@@ -1013,6 +1013,21 @@ void createCommandBuffers(vulkanContext& context)
     };
 };
 
+//TODO check if we actually need to handle it this way
+// or just use the same command buffers as the graphic pipeline 
+void createBoidsCommandBuffers(vulkanContext& context)
+{
+    context.boidsCommandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = context.commandPool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = (uint32_t) context.boidsCommandBuffer.size();
+
+    auto result = vkAllocateCommandBuffers(context.device, &allocInfo, context.commandBuffers.data());
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Command Buffers");
+};
+
 void createSyncObjects(vulkanContext& context)
 {
     context.imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1094,5 +1109,26 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         vkUpdateDescriptorSets(context.device, 1 , &boidsUBOWriteSet, 0, nullptr);
         vkUpdateDescriptorSets(context.device, 1 , &boidsWriteSet, 0, nullptr);
         //TODO Move the descriptor sets from this function into context.
+    };
+};
+
+void createBoidsSyncObjects(vulkanContext& context)
+{
+    context.boidsInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    context.boidsFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        ASSERT_VK_RESULT(vkCreateSemaphore(context.device, &semaphoreInfo, nullptr, &context.boidsFinishedSemaphores[i]),
+             VK_SUCCESS, "Create Boids Semaphore");
+        ASSERT_VK_RESULT(vkCreateFence(context.device, &fenceInfo, nullptr, &context.boidsInFlightFences[i]),
+             VK_SUCCESS, "Create Boids Fence");
     };
 };

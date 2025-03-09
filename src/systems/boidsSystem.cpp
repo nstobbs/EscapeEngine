@@ -65,6 +65,31 @@ void BoidsSystem::start()
         // TODO the graphic pipeline for rendering should of been created at this point
         
         // 4. Create the DescriptorSets for just the Boids Sims
-
+        createBoidsDescriptorSets(m_context, m_scene);
+        createBoidsSyncObjects(m_context);
     };
+};
+
+void BoidsSystem::update()
+{
+
+    vkWaitForFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame],
+            VK_TRUE, UINT64_MAX);
+            
+            //TODO Just fix this lol, I know im about to write some hot trash here!!!
+            BoidsComponent currentSim;
+            for (auto ent : m_boidsSims)
+            {
+                currentSim = m_scene->m_BoidsComponents.at(ent);
+            };
+
+            updateBoidsUniformBuffer(m_context, currentSim);
+
+            vkResetFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame]);
+
+            vkResetCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame], 0);
+
+            /* Start Command Buffer Recording */
+                
+            /* End Command Buffer Recording */
 };

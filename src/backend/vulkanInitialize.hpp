@@ -43,5 +43,7 @@ void createCommandBuffers(vulkanContext& context);
 void createSyncObjects(vulkanContext& context);
 
 void createBoidsDescriptorSets(vulkanContext& context, Scene* scene);
+void createBoidsSyncObjects(vulkanContext& context);
+void createBoidsCommandBuffers(vulkanContext& context);
 
 #endif
