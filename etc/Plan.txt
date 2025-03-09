@@ -114,3 +114,11 @@ Boids TODO List
     Create a Storage Buffer with Boids Position, Direction data.
     Feed this Data into Compute Shader and calculate the new Position and Direction.
     
+
+Boids Processing Timeline
+
+    1. Submit Compute Boids Shaders
+    2. Render All Entities without BoidsComponent
+    3. Entities with BoidsComponent, Wait for Compute Boids Shaders to Finish (Semaphore ComputeSemaphore)
+        Once Compute is Done. Starting Rendering the instanced meshes. Hold the Compute Shader. (Semaphore renderFinishedSemaphores)
+    Once everything is rendered. Present Image, Start the Compute Shader Again. Reset the Semaphore.

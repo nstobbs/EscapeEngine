@@ -232,7 +232,7 @@ void RenderSystem::update()
     } else if (resultPresent != VK_SUCCESS)
     {
         throw std::runtime_error("{ERROR} FAILED TO CREATE SWAPCHAIN.");
-    }
+    };
 
     m_context.currentFrame = (m_context.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 };

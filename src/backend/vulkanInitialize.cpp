@@ -523,6 +523,26 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 
             context.descriptorSetLayoutsLists[ent] = layout;
         }
+
+        if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
+        {
+            VkDescriptorSetLayoutBinding storageBufferBinding{};
+            storageBufferBinding.binding = 0;
+            storageBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            storageBufferBinding.descriptorCount = 1;
+            storageBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+            storageBufferBinding.pImmutableSamplers = nullptr;
+
+            VkDescriptorSetLayout storageDescriptorLayout;
+            VkDescriptorSetLayoutCreateInfo storageDescriptorLayoutInfo{};
+            storageDescriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            storageDescriptorLayoutInfo.bindingCount = 1;
+            storageDescriptorLayoutInfo.pBindings = &storageBufferBinding;
+
+            auto result = vkCreateDescriptorSetLayout(context.device, &storageDescriptorLayoutInfo, nullptr, &storageDescriptorLayout);
+            ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Storage Buffer Descriptor Set Layout");
+            context.boidsDescriptorsLayout_gfx = storageDescriptorLayout;
+        };
     }
     // TextureLayout set 
     /* Set == 2*/
@@ -581,6 +601,12 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             {
                 tempLayout.push_back(layout);
             }
+
+            // Add Storage Buffer to Graphic Layout
+            if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
+            {
+                tempLayout.push_back(context.boidsDescriptorsLayout_gfx);
+            };
              /* Globals */
             tempLayout.push_back(context.textureDescriptorSetLayout); 
             
@@ -634,8 +660,15 @@ void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
+    // for boids graphic pipeline force change input rate
     auto bindingDescription = Vertex::getBindingDescription();
     auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+    if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
+    {
+        /* Set instancing for BoidsSystem */
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+    };
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

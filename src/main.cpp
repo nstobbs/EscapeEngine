@@ -16,11 +16,10 @@ int main()
     vikingRoomTextureFilepaths.push_back("../../textures/viking_room.png");
     Entity vikingRoom = Factor.createOBJMesh("../../models/viking_room.obj", vikingRoomTextureFilepaths);
     
-    /*
+    
     std::vector<std::string> cityTextureFilepaths;
     cityTextureFilepaths.push_back("../../textures/citytokio.png");
     Entity city = Factor.createOBJMesh("../../models/citytokio.obj", cityTextureFilepaths);
-    */
 
     /* Create Camera */
     CameraComponent Camera;

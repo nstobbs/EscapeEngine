@@ -121,7 +121,8 @@ struct vulkanContext
     VkSampler textureSampler; // We need more if we use different sampler settings. TODO ADD SETTINGS TO USE MORE THAN ONE
     
     /* ############ Boids Component ############*/
-    VkDescriptorSetLayout boidsDescriptorsLayout;
+    VkDescriptorSetLayout boidsDescriptorsLayout; // compute 
+    VkDescriptorSetLayout boidsDescriptorsLayout_gfx; // graphic
     VkPipelineLayout boidsPipelineLayout;
     VkPipeline boidsPipeline;
 
