@@ -12,3 +12,6 @@ WIP
 - [ ] Create an GPU abstraction layer. 
 - [ ] Basic Refactor of esc system.
 - [ ] Add Builds Steps for linux.
+- [ ] Add pybind
+- [ ] Improve Grid Drawing
+- [ ] Add Mltisampling support
