@@ -12,7 +12,7 @@ GLFWwindow* initializeWindow(vulkanContext& context)
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     GLFWwindow* window;
     
-    window = glfwCreateWindow(WIDTH, HEIGHT, "ESC", nullptr, nullptr); // TODO: MAKE CONST IN GLOBE FILE
+    window = glfwCreateWindow(WIDTH, HEIGHT, "EscapeEngine", nullptr, nullptr); // TODO: MAKE CONST IN GLOBE FILE
     if (window == NULL)
     {
         throw std::runtime_error("{ERROR} FAILED TO CREATE WINDOW");
