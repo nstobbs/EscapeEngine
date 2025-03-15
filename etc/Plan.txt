@@ -122,3 +122,32 @@ Boids Processing Timeline
     3. Entities with BoidsComponent, Wait for Compute Boids Shaders to Finish (Semaphore ComputeSemaphore)
         Once Compute is Done. Starting Rendering the instanced meshes. Hold the Compute Shader. (Semaphore renderFinishedSemaphores)
     Once everything is rendered. Present Image, Start the Compute Shader Again. Reset the Semaphore.
+
+
+Current Sync Timeline
+
+    Drawing
+        First we wait for a Frame to becomes available to render to. *Fence
+            We then Reset that Frame's Fence and Command Buffer
+        Record our Draw Command
+        When we Submit our command buffer. Our Command Waits for a  Frame to become Available *Semaphores
+        And once the Command has finished it will signal to say it's Finished Rendering *Semaphores
+        When submit a present Command that wait's for the Finished Rendering to signal  *Semaphores
+        
+BoidsSystem and RenderSystem Sync Timeline
+
+    Compute
+        First we wait for a Frame to become available to compute to. *Fence
+            We then don't reset that Frame's Fence but reset the Compute Command Buffer.
+        We Record our Compute Command
+            Once the Command has finished it will signal to say it's finished. *Semaphores
+    Drawing
+        Again we wait for the frame to become available to render to. *Fence //dont really need to check tho
+            We then reset our Fences and Command Buffer.
+        We Record our Draw Command.
+            When we submit our command Buffer, we first wait for a frame to become available
+            and we wait for the compute to finished/
+            Once the command has finished we signal that it's it finished rendering.
+        Present
+            we then wait for the finished rendering to be signal before we present the
+            frame to screen.

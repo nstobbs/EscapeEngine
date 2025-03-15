@@ -72,7 +72,7 @@ void BoidsSystem::start()
 void BoidsSystem::update()
 {
 
-    vkWaitForFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame],
+    vkWaitForFences(m_context.device, 1, &m_context.inFlightFences[m_context.currentFrame],
             VK_TRUE, UINT64_MAX);
             
     //TODO Just fix this lol, I know im about to write some hot trash here!!!
@@ -83,8 +83,6 @@ void BoidsSystem::update()
     };
 
     updateBoidsUniformBuffer(m_context, currentSim);
-
-    vkResetFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame]);
 
     vkResetCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame], 0);
 
@@ -106,7 +104,7 @@ void BoidsSystem::update()
     result = vkEndCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame]);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Ending Boids Compute Command Buffer");
     /* End Command Buffer Recording */
-
+    
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;

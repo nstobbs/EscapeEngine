@@ -17,12 +17,17 @@ void RenderSystem::start()
         size_t resultMesh = m_scene->m_MeshComponents.count(ent);
         size_t resultShader = m_scene->m_ShaderComponents.count(ent);
         size_t resultTransform = m_scene->m_TransformComponents.count(ent);
+        size_t resultBoids = m_scene->m_BoidsComponents.count(ent);
 
-        if (resultMesh != 0 && resultShader != 0 && resultTransform != 0)
+        if (resultMesh != 0 && resultShader != 0 && resultTransform != 0 && resultBoids != 0)
+        {
+            boidsSim = ent;
+        } 
+        else if (resultMesh != 0 && resultShader != 0 && resultTransform != 0)
         {
             /* IF a Entity has the required components then draw it*/
             renderableEntities.push_back(ent);
-        };  
+        };
     };
 
     if (renderableEntities.size() != 0)
@@ -142,7 +147,61 @@ void RenderSystem::update()
 
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
     };
-    
+
+    /* Render Boids As Meshes */
+    if(boidsSim != NULL)
+    {
+        ShaderComponent shader = m_scene->m_ShaderComponents.at(boidsSim);
+        /* Update the Uniform Buffer For the Object We are Currently Rendering*/
+        TransformComponent modelTransforms = m_scene->m_TransformComponents.at(boidsSim);
+        updateUniformBuffer(m_context, m_scene, modelTransforms); 
+        /* Get the ShaderID for this Entity */
+        uint32_t shaderID = (m_scene->m_ShaderComponents.at(boidsSim).ID);
+        vkCmdBindPipeline(m_context.commandBuffers[m_context.currentFrame],
+                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.graphicsPiplines.at(boidsSim));
+
+        vkCmdBindVertexBuffers(m_context.commandBuffers[m_context.currentFrame],
+                                 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(m_context.commandBuffers[m_context.currentFrame], 
+                            m_context.indexBuffer, 0, VK_INDEX_TYPE_UINT32); 
+
+        vkCmdSetViewport(m_context.commandBuffers[m_context.currentFrame], 
+                         0, 1, &viewport);
+        vkCmdSetScissor(m_context.commandBuffers[m_context.currentFrame], 0, 1, &scissor);
+
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 0, 1,
+                            &m_context.descriptorSets.at(boidsSim).at(sceneType)[m_context.currentFrame], 0, nullptr);
+
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 1, 1,
+                            &m_context.descriptorSets.at(boidsSim).at(objectType)[m_context.currentFrame], 0, nullptr);
+
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 2, 1,
+                            &m_context.textureDescriptorSet, 0, nullptr);
+
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 3, 1,
+                            &m_context.boidsDescriptors[m_context.currentFrame], 0, nullptr);
+
+        uint32_t meshID = m_scene->m_MeshComponents.at(boidsSim).ID; // Doesn't seem needed 
+        uint32_t firstIndex = m_scene->m_MeshComponents.at(boidsSim).details.firstIndex;
+        uint32_t indicesCount = m_scene->m_MeshComponents.at(boidsSim).indicesCount;
+
+        /* TEMP ONLY SUPPORT ONE TEXTURE MATERIALS */
+        /* Push Constant FoR Sending TextureIndex*/
+        TextureIndexPush index;
+        for (auto& texture : m_scene->m_TextureComponents.at(boidsSim))
+        {
+            index.textureIndex = texture.ID - 1;
+        };
+
+        vkCmdPushConstants(m_context.commandBuffers[m_context.currentFrame], 
+                           m_context.pipelineLayouts.at(boidsSim),
+                           VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT,
+                           0,
+                           sizeof(TextureIndexPush),
+                           &index);
+
+        vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
+    };
     //TODO MOVE THIS TO A DIFFERENT FILE PLEASE!!!
     /* TEMP IMGUI RENDER CODE, TO MOVE INTO IT'S OWN SYSTEM LATER */
     bool showDemo = true;
@@ -195,11 +254,17 @@ void RenderSystem::update()
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkSemaphore waitSemaphores[] = {m_context.imageAvailableSemaphores[m_context.currentFrame]};
+    
+    std::vector<VkSemaphore> waitSemaphores;
+    waitSemaphores.push_back(m_context.imageAvailableSemaphores[m_context.currentFrame]);
+    if (boidsSim != NULL)
+    {
+        waitSemaphores.push_back(m_context.boidsFinishedSemaphores[m_context.currentFrame]);    
+    };
+    
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
@@ -219,7 +284,7 @@ void RenderSystem::update()
 
     VkSwapchainKHR swapChains[] = {m_context.swapChain};
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains= swapChains;
+    presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
 
     presentInfo.pResults = nullptr;

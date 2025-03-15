@@ -20,6 +20,7 @@ class RenderSystem
         vulkanContext& m_context;
 
         std::vector<Entity> m_renderableEntities;
+        Entity boidsSim = NULL;
 };
 
 #endif
