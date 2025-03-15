@@ -54,6 +54,11 @@ void Scene::setEntityShaderComponent(Entity ent, ShaderComponent shader)
     m_ShaderComponents[ent] = shader;
 };
 
+void Scene::setEntityBoidsComponent(Entity ent, BoidsComponent boids)
+{
+    m_BoidsComponents[ent] = boids;
+};
+
 void Scene::pushEntityTextureComponent(Entity ent, TextureComponent texture)
 {
     m_TextureComponents[ent].push_back(texture);

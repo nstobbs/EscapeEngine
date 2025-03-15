@@ -23,7 +23,7 @@ else:
 
 shaderPaths = []
 for file in os.listdir("./"):
-    if file.endswith(".frag") or file.endswith(".vert"):
+    if file.endswith(".frag") or file.endswith(".vert") or file.endswith(".comp"):
         print("Found Shader: {filename}".format(filename=file))
         shaderPaths.append(file)
 
@@ -35,7 +35,9 @@ for sourcePath in shaderPaths:
         outputFilename = sourcePath.split('.', 1)[0] + "Frag.spv"
     elif sourcePath.endswith(".vert"):
         outputFilename = sourcePath.split('.', 1)[0] + "Vert.spv"
-    
+    elif sourcePath.endswith(".comp"):
+        outputFilename = sourcePath.split('.', 1)[0] + "Comp.spv"
+
     compileCommand = "{compilerPath} {sourcePath} -o {outputPath}".format(compilerPath=GLSLC_PATH, sourcePath=sourcePath, outputPath=outputFilename)
     try:        
         runCommand = subprocess.run(compileCommand, shell=True, check=True, capture_output=True, encoding="utf-8")

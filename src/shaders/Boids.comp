@@ -1,1 +1,6 @@
-// COMPUTE SHADER FOR BOIDS
+#version 450 core
+
+void main()
+{
+    
+}

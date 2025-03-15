@@ -22,6 +22,32 @@ int main()
     Entity city = Factor.createOBJMesh("../../models/citytokio.obj", cityTextureFilepaths);
     */
 
+    /* Boids Testing */
+    Entity boids = SceneObject.makeEntity();
+
+    TransformComponent boidsTransform;
+    boidsTransform.position = glm::mat4(1.0f);
+
+    ShaderComponent boidsShaders;
+    boidsShaders.fragmentSourcePath = "../../src/shaders/BoidsFrag.spv";
+    boidsShaders.vertexSourcePath = "../../src/shaders/BoidsVert.spv";
+
+    MeshComponent boidsMesh;
+    boidsMesh.filepath = "../../models/viking_room.obj";
+    objLoader(boidsMesh);
+    
+    TextureComponent boidsTexture;
+    boidsTexture.texturePath = "../../textures/viking_room.png";
+
+    BoidsComponent boidsSim;
+    boidsSim.boidsCount = 10;
+
+    SceneObject.setEntityTransformComponent(boids, boidsTransform);
+    SceneObject.setEntityShaderComponent(boids, boidsShaders);
+    SceneObject.setEntityMeshComponent(boids, boidsMesh);
+    SceneObject.pushEntityTextureComponent(boids, boidsTexture);
+    SceneObject.setEntityBoidsComponent(boids, boidsSim);
+
     /* Create Camera */
     CameraComponent Camera;
     Camera.focalLength = 45.0f;
