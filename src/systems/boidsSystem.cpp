@@ -27,7 +27,7 @@ void BoidsSystem::start()
 
     if (boidsSims.size() != 0)
     {
-        boidsSims = m_boidsSims;
+        m_boidsSims = boidsSims;
     };
 
     std::random_device rd;
@@ -60,8 +60,6 @@ void BoidsSystem::start()
         // 3. Upload This Data to the GPU
         createBoidsStorageBuffer(m_context, boids);
         createUniformBuffer(m_context, boidType, sizeof(BoidsSim));
-
-        // TODO the graphic pipeline for rendering should of been created at this point
         
         // 4. Create the DescriptorSets for just the Boids Sims
         createBoidsDescriptorSets(m_context, m_scene);
@@ -95,7 +93,8 @@ void BoidsSystem::update()
 
     vkCmdBindPipeline(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
             m_context.boidsPipeline);
-
+    
+    // TODO Seems like we are not binding the right set of descriptor sets here...
     vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
             m_context.boidsPipelineLayout, 0, 1, &m_context.boidsDescriptors[m_context.currentFrame], 0, nullptr);
 
@@ -114,13 +113,4 @@ void BoidsSystem::update()
     
     result = vkQueueSubmit(m_context.computeQueue, 1, &submitInfo, m_context.boidsInFlightFences[m_context.currentFrame]);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Submit Boids Compute Command Buffer");
-
-    // TODO Need to do more research here
-    /* The issue here is that I dont't want to make an call to KHR to acquire an new image
-    since I believe this will create an issue where every other frame is the boids systems
-    then are main frame is render next. Instead might be better to do all of the command buffer
-    prep here then give it back to the context to render later in our renderSystem instead of
-    trying to display it here. Will need to double check that we can submit mult  commandbuffers
-    to one frame*/
-
 };

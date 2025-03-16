@@ -85,9 +85,14 @@ void Application::startUp()
 void Application::loop()
 {
     std::cout << "{INFO} Starting Loop...\n";
+    /* Create Systems */
     CameraSystem cameraSystem(m_Scene, m_window);
+    BoidsSystem boidsSystem(m_vulkanContext, m_Scene);
     RenderSystem renderSystem(m_vulkanContext, m_Scene, m_window);
+
+    /* Systems Start ups*/
     renderSystem.start();
+    boidsSystem.start();
     cameraSystem.start();
     float delta = 0.0f;
 
@@ -98,10 +103,10 @@ void Application::loop()
         auto start = std::chrono::high_resolution_clock::now();
 
         glfwPollEvents();
-        renderSystem.update();
-
         auto end = std::chrono::high_resolution_clock::now();
         delta = std::chrono::duration<float, std::chrono::seconds::period>(end - start).count();
+        boidsSystem.update();
+        renderSystem.update();
         cameraSystem.update(delta); // crash when it's placed before the renderSystem ??
 
         //std::cout << "frame timing: " << delta << std::endl;

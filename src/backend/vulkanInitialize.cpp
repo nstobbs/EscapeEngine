@@ -468,7 +468,9 @@ VkFormat findSupportFormat(vulkanContext& context, std::vector<VkFormat>& candid
 void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 {
     for (auto& ent : scene->m_Entities)
-    {
+    {   
+        std::vector<VkDescriptorSetLayout> layout;
+
         if (scene->m_ShaderComponents.find(ent) != scene->m_ShaderComponents.end())
         {
             std::vector<VkDescriptorSetLayoutBinding> bindings;
@@ -493,7 +495,6 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             // https://web.engr.oregonstate.edu/~mjb/vulkan/Handouts/DescriptorSets.1pp.pdf
 
             /* Set == 0*/
-            std::vector<VkDescriptorSetLayout> layout; // TODO is then even needed???
 
             VkDescriptorSetLayout sceneDescriptorLayout;
             std::vector<VkDescriptorSetLayoutBinding> sceneBindings;
@@ -520,12 +521,13 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 
             ASSERT_VK_RESULT(vkCreateDescriptorSetLayout(context.device, &objectDescriptorLayoutInfo, nullptr, &objectDescriptorLayout), VK_SUCCESS, "Object Descriptor Set");
             layout.push_back(objectDescriptorLayout);
-
-            context.descriptorSetLayoutsLists[ent] = layout;
         }
 
         if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
         {
+            //TODO Think we need to add the In and Out descriptor Sets here
+            //TODO For some reason it's missing up with textures...
+            /* Boids Storage Buffer */
             VkDescriptorSetLayoutBinding storageBufferBinding{};
             storageBufferBinding.binding = 0;
             storageBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -541,8 +543,11 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
 
             auto result = vkCreateDescriptorSetLayout(context.device, &storageDescriptorLayoutInfo, nullptr, &storageDescriptorLayout);
             ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Storage Buffer Descriptor Set Layout");
-            context.boidsDescriptorsLayout_gfx = storageDescriptorLayout;
+            context.boidsDescriptorsLayout_gfx = storageDescriptorLayout; // TODO dont really need this anymore?
+            layout.push_back(storageDescriptorLayout);
         };
+
+        context.descriptorSetLayoutsLists[ent] = layout;
     }
     // TextureLayout set 
     /* Set == 2*/
@@ -605,8 +610,12 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
             // Add Storage Buffer to Graphic Layout
             if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
             {
-                tempLayout.push_back(context.boidsDescriptorsLayout_gfx);
+                //Dont think we need this anymore but check
+                //TODO Come back and check for the In and Out Buffer here too...
+                //tempLayout.push_back(context.boidsDescriptorsLayout_gfx);
+                std::cout << "This is a boid shader...\n"; 
             };
+
              /* Globals */
             tempLayout.push_back(context.textureDescriptorSetLayout); 
             
@@ -773,10 +782,8 @@ void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)
     pipelineInfo.basePipelineIndex = -1;
 
     VkPipeline graphicsPipline;
-    if (vkCreateGraphicsPipelines(context.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipline) != VK_SUCCESS)
-    {
-        throw std::runtime_error("{ERROR} FAILED TO CREATE GRAPHIC PIPELINE");
-    };
+    auto result = vkCreateGraphicsPipelines(context.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipline);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Graphic Pipeline");
     context.graphicsPiplines[ent] = graphicsPipline;
 
     vkDestroyShaderModule(context.device, vertShaderModule, nullptr);
@@ -843,24 +850,28 @@ void createDescriptorPool(vulkanContext& context, Scene* scene)
 
     VkDescriptorPoolSize sceneBufferPoolSize{};
     sceneBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    sceneBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    sceneBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * 10);
     poolSize.push_back(sceneBufferPoolSize);
 
+    /*
     VkDescriptorPoolSize objectBufferPoolSize{};
     objectBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     objectBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(sceneBufferPoolSize);
+    */
 
     // Boids Descriptors
     VkDescriptorPoolSize boidsBufferPoolSize{};
     boidsBufferPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER; //TODO double check this
-    boidsBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    boidsBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * 3);
     poolSize.push_back(boidsBufferPoolSize);
 
+    /*
     VkDescriptorPoolSize simBufferPoolSize{};
     simBufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     simBufferPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSize.push_back(simBufferPoolSize);
+    */
 
     VkDescriptorPoolSize imguiTexturesCombinedPoolSize{};
     imguiTexturesCombinedPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1089,7 +1100,7 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = context.descriptorPool;
-    allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT * 2;
+    allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT;
     allocInfo.pSetLayouts = &context.boidsDescriptorsLayout;
 
     std::vector<VkDescriptorSet> descriptorSets(MAX_FRAMES_IN_FLIGHT * 2);
@@ -1132,6 +1143,7 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         boidsUBOWriteSet.dstArrayElement = 0;
         boidsUBOWriteSet.pBufferInfo = &boidsUBOBufferInfo;
 
+        //TODO think I need to have an In and Out Descriptor Set here
         VkWriteDescriptorSet boidsWriteSet{};
         boidsWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         boidsWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

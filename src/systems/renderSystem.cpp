@@ -151,6 +151,7 @@ void RenderSystem::update()
     /* Render Boids As Meshes */
     if(boidsSim != NULL)
     {
+        BoidsComponent boids = m_scene->m_BoidsComponents.at(boidsSim);
         ShaderComponent shader = m_scene->m_ShaderComponents.at(boidsSim);
         /* Update the Uniform Buffer For the Object We are Currently Rendering*/
         TransformComponent modelTransforms = m_scene->m_TransformComponents.at(boidsSim);
@@ -199,8 +200,7 @@ void RenderSystem::update()
                            0,
                            sizeof(TextureIndexPush),
                            &index);
-
-        vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, 1, firstIndex, 0, 0);
+        vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, boids.boidsCount, firstIndex, 0, 0);
     };
     //TODO MOVE THIS TO A DIFFERENT FILE PLEASE!!!
     /* TEMP IMGUI RENDER CODE, TO MOVE INTO IT'S OWN SYSTEM LATER */

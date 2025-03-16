@@ -13,6 +13,7 @@
 
 #include "../systems/renderSystem.hpp"
 #include "../systems/cameraSystem.hpp"
+#include "../systems/boidsSystem.hpp"
 
 #include "scene.hpp"
 

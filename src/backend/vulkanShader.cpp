@@ -40,19 +40,29 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
     std::vector<VkDescriptorSetLayoutBinding> bindings;
 
     // Raw Boids Data Binding
-    VkDescriptorSetLayoutBinding boidsBinding{};
-    boidsBinding.binding = 0;
-    boidsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    boidsBinding.descriptorCount = 1;
-    boidsBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | 
+    VkDescriptorSetLayoutBinding boidsInBinding{};
+    boidsInBinding.binding = 0;
+    boidsInBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    boidsInBinding.descriptorCount = 1;
+    boidsInBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | 
                               VK_SHADER_STAGE_VERTEX_BIT |
                               VK_SHADER_STAGE_FRAGMENT_BIT;
-    boidsBinding.pImmutableSamplers = nullptr;
-    bindings.push_back(boidsBinding);
+    boidsInBinding.pImmutableSamplers = nullptr;
+    bindings.push_back(boidsInBinding);
+
+    VkDescriptorSetLayoutBinding boidsOutBinding{};
+    boidsOutBinding.binding = 1;
+    boidsOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    boidsOutBinding.descriptorCount = 1;
+    boidsOutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | 
+                              VK_SHADER_STAGE_VERTEX_BIT |
+                              VK_SHADER_STAGE_FRAGMENT_BIT;
+    boidsOutBinding.pImmutableSamplers = nullptr;
+    bindings.push_back(boidsOutBinding);
 
     // Boids Sim Parameters Binding
     VkDescriptorSetLayoutBinding simBinding{};
-    simBinding.binding = 1;
+    simBinding.binding = 2;
     simBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     simBinding.descriptorCount = 1;
     simBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT |
@@ -74,13 +84,13 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
 
 void createBoidsComputePipeline(vulkanContext& context)
 {
-    auto computeShaderCode = readShaderSourceFile("../../src/shaders/BoidsComp.spv"); // TODO add path
+    auto computeShaderCode = readShaderSourceFile("../../src/shaders/BoidsComp.spv");
     VkShaderModule computeShaderModule = createShaderModule(computeShaderCode, context.device);
 
     VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
     computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     computeShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    computeShaderStageInfo.module = computeShaderModule;createBoidsDescriptorSetLayout;
+    computeShaderStageInfo.module = computeShaderModule;
     computeShaderStageInfo.pName = "main";
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

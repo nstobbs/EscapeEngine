@@ -1,6 +1,35 @@
 #version 450 core
 
+struct Boid {
+    vec3 pos;
+    vec3 dir;
+};
+
+layout(std140, binding = 0) readonly buffer BoidsSSBOIn
+{
+    Boid boidsIn[ ];
+};
+
+layout(std140, binding = 1) buffer BoidsSSBOOut
+{
+    Boid boidsOut[ ];
+};
+
+layout(std140, binding = 2) uniform BoidsSim {
+    float sim_separation;
+    float sim_alignment;
+    float sim_cohesion;
+    float height;
+    float width;
+    float depth;
+
+    float deltaTime;
+} sim;
+
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
 void main()
 {
-    
+    uint index = gl_GlobalInvocationID.x;
+    boidsOut[index] = boidsIn[index];
 }
