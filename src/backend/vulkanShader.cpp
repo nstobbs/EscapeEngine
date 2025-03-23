@@ -48,38 +48,55 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
                               VK_SHADER_STAGE_VERTEX_BIT |
                               VK_SHADER_STAGE_FRAGMENT_BIT;
     boidsInBinding.pImmutableSamplers = nullptr;
-    bindings.push_back(boidsInBinding);
+
+    VkDescriptorSetLayout boidsInlayout;
+    VkDescriptorSetLayoutCreateInfo boidsInlayoutInfo{};
+    boidsInlayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    boidsInlayoutInfo.bindingCount = 1;
+    boidsInlayoutInfo.pBindings = &boidsInBinding;
+
+    auto result = vkCreateDescriptorSetLayout(context.device, &boidsInlayoutInfo, nullptr, &boidsInlayout);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsInlayout");
+    context.boidsDescriptorsLayouts.push_back(boidsInlayout);
 
     VkDescriptorSetLayoutBinding boidsOutBinding{};
-    boidsOutBinding.binding = 1;
+    boidsOutBinding.binding = 0;
     boidsOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     boidsOutBinding.descriptorCount = 1;
     boidsOutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | 
                               VK_SHADER_STAGE_VERTEX_BIT |
                               VK_SHADER_STAGE_FRAGMENT_BIT;
     boidsOutBinding.pImmutableSamplers = nullptr;
-    bindings.push_back(boidsOutBinding);
+
+    VkDescriptorSetLayout boidsOutlayout;
+    VkDescriptorSetLayoutCreateInfo boidsOutlayoutInfo{};
+    boidsOutlayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    boidsOutlayoutInfo.bindingCount = 1;
+    boidsOutlayoutInfo.pBindings = &boidsOutBinding;
+
+    result = vkCreateDescriptorSetLayout(context.device, &boidsOutlayoutInfo, nullptr, &boidsOutlayout);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsInlayout");
+    context.boidsDescriptorsLayouts.push_back(boidsOutlayout);
 
     // Boids Sim Parameters Binding
     VkDescriptorSetLayoutBinding simBinding{};
-    simBinding.binding = 2;
+    simBinding.binding = 0;
     simBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     simBinding.descriptorCount = 1;
     simBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT |
                             VK_SHADER_STAGE_VERTEX_BIT |
                             VK_SHADER_STAGE_FRAGMENT_BIT;
     simBinding.pImmutableSamplers = nullptr;
-    bindings.push_back(simBinding);
 
-    VkDescriptorSetLayout layout;
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
+    VkDescriptorSetLayout boidsSimLayout;
+    VkDescriptorSetLayoutCreateInfo boidsSimLayoutInfo{};
+    boidsSimLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    boidsSimLayoutInfo.bindingCount = 1;
+    boidsSimLayoutInfo.pBindings = &simBinding;
 
-    auto result = vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &layout);
-    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor Layout");
-    context.boidsDescriptorsLayout = layout;
+    result = vkCreateDescriptorSetLayout(context.device, &boidsSimLayoutInfo, nullptr, &boidsSimLayout);
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsInlayout");
+    context.boidsDescriptorsLayouts.push_back(boidsOutlayout);
 };
 
 void createBoidsComputePipeline(vulkanContext& context)
@@ -95,8 +112,8 @@ void createBoidsComputePipeline(vulkanContext& context)
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &context.boidsDescriptorsLayout;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(context.boidsDescriptorsLayouts.size());
+    pipelineLayoutInfo.pSetLayouts = context.boidsDescriptorsLayouts.data();
 
     VkPipelineLayout pipelineLayout;
     auto result = vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout);

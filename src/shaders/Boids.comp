@@ -5,17 +5,17 @@ struct Boid {
     vec3 dir;
 };
 
-layout(std140, binding = 0) readonly buffer BoidsSSBOIn
+layout(set = 0, binding = 0) readonly buffer BoidsSSBOIn
 {
     Boid boidsIn[ ];
 };
 
-layout(std140, binding = 1) buffer BoidsSSBOOut
+layout(set = 1, binding = 0) buffer BoidsSSBOOut
 {
     Boid boidsOut[ ];
 };
 
-layout(std140, binding = 2) uniform BoidsSim {
+layout(set = 3, binding = 0) uniform BoidsSim {
     float sim_separation;
     float sim_alignment;
     float sim_cohesion;
