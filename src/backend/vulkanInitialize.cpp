@@ -1070,7 +1070,7 @@ void createBoidsCommandBuffers(vulkanContext& context)
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (uint32_t) context.boidsCommandBuffer.size();
 
-    auto result = vkAllocateCommandBuffers(context.device, &allocInfo, context.commandBuffers.data());
+    auto result = vkAllocateCommandBuffers(context.device, &allocInfo, context.boidsCommandBuffer.data());
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Command Buffers");
 };
 
@@ -1178,8 +1178,9 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         vkUpdateDescriptorSets(context.device, 1 , &boidsInWriteSet, 0, nullptr);
         vkUpdateDescriptorSets(context.device, 1 , &boidsOutWriteSet, 0, nullptr);
         vkUpdateDescriptorSets(context.device, 1 , &boidsUBOWriteSet, 0, nullptr);
-        //TODO Move the descriptor sets from this function into context.
     };
+
+    context.boidsDescriptors = descriptorSets;
 };
 
 void createBoidsSyncObjects(vulkanContext& context)

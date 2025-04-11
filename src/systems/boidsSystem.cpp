@@ -63,7 +63,10 @@ void BoidsSystem::start()
         
         // 4. Create the DescriptorSets for just the Boids Sims
         createBoidsDescriptorSets(m_context, m_scene);
+
+        // 5. Create Command Buffer and Sync Objects
         createBoidsSyncObjects(m_context);
+        createBoidsCommandBuffers(m_context);
     };
 };
 
@@ -94,9 +97,17 @@ void BoidsSystem::update()
     vkCmdBindPipeline(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
             m_context.boidsPipeline);
     
-    // TODO Seems like we are not binding the right set of descriptor sets here...
+    // Storage Buffer In
     vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
             m_context.boidsPipelineLayout, 0, 1, &m_context.boidsDescriptors[m_context.currentFrame], 0, nullptr);
+
+    // Storage Buffer Out
+    vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_context.boidsPipelineLayout, 1, 1, &m_context.boidsDescriptors[m_context.currentFrame + 2], 0, nullptr);
+
+    // Uniform Buffer
+    vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_context.boidsPipelineLayout, 2, 1, &m_context.boidsDescriptors[m_context.currentFrame + 4], 0, nullptr);
 
     vkCmdDispatch(m_context.boidsCommandBuffer[m_context.currentFrame], currentSim.boidsCount / 256, 1, 1);
 
