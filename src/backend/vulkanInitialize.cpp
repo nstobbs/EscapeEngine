@@ -912,6 +912,8 @@ void createDescriptorSets(vulkanContext& context, Scene* scene)
             ShaderComponent shader = scene->m_ShaderComponents.at(ent);
             int descriptorSetCount = static_cast<int>(MAX_FRAMES_IN_FLIGHT * context.descriptorSetLayoutsLists.at(ent).size());
 
+            // Info: Add create a new layout for each frame we need
+            // in descriptor sets counts. E.g. descriptor set * frame in flight
             std::vector<VkDescriptorSetLayout> layouts;
             for (size_t x = 0; x < MAX_FRAMES_IN_FLIGHT; x++)
             {
@@ -1098,13 +1100,23 @@ void createSyncObjects(vulkanContext& context)
 void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
 {
     uint32_t descriptorCount = static_cast<uint32_t>(context.boidsDescriptorsLayouts.size() * MAX_FRAMES_IN_FLIGHT);
+
+    std::vector<VkDescriptorSetLayout> layouts;
+    for (auto setlayout : context.boidsDescriptorsLayouts)
+    {
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            layouts.push_back(setlayout);
+        }
+    }
+
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = context.descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(context.boidsDescriptorsLayouts.size());
-    allocInfo.pSetLayouts = context.boidsDescriptorsLayouts.data();
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(descriptorCount);
+    allocInfo.pSetLayouts = layouts.data();
 
-    std::vector<VkDescriptorSet> descriptorSets(MAX_FRAMES_IN_FLIGHT * descriptorCount);
+    std::vector<VkDescriptorSet> descriptorSets(descriptorCount);
     auto result = vkAllocateDescriptorSets(context.device, &allocInfo, descriptorSets.data());
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Allocate Boids Descriptor Sets");
 
@@ -1136,25 +1148,35 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         boidsBufferInfo.range = static_cast<uint32_t>(boidsDetails.boidsCount * sizeof(Boid));
         
         //TODO think I need to have an In and Out Descriptor Set here
-        VkWriteDescriptorSet boidsWriteSet{};
-        boidsWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        boidsWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        boidsWriteSet.descriptorCount = 1;
-        boidsWriteSet.dstBinding = 0;
-        boidsWriteSet.dstSet = descriptorSets[i];
-        boidsWriteSet.dstArrayElement = 0;
-        boidsWriteSet.pBufferInfo = &boidsBufferInfo;
+        VkWriteDescriptorSet boidsInWriteSet{};
+        boidsInWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        boidsInWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        boidsInWriteSet.descriptorCount = 1;
+        boidsInWriteSet.dstBinding = 0;
+        boidsInWriteSet.dstSet = descriptorSets[i]; // 0 and 1
+        boidsInWriteSet.dstArrayElement = 0;
+        boidsInWriteSet.pBufferInfo = &boidsBufferInfo;
+        
+        VkWriteDescriptorSet boidsOutWriteSet{};
+        boidsOutWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        boidsOutWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        boidsOutWriteSet.descriptorCount = 1;
+        boidsOutWriteSet.dstBinding = 0;
+        boidsOutWriteSet.dstSet = descriptorSets[i+2]; // 2 and 3
+        boidsOutWriteSet.dstArrayElement = 0;
+        boidsOutWriteSet.pBufferInfo = &boidsBufferInfo;
 
         VkWriteDescriptorSet boidsUBOWriteSet{};
         boidsUBOWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         boidsUBOWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         boidsUBOWriteSet.descriptorCount = 1;
-        boidsUBOWriteSet.dstSet = descriptorSets[i+2];
+        boidsUBOWriteSet.dstSet = descriptorSets[i+4]; // 4 and 5
         boidsUBOWriteSet.dstBinding = 0;
         boidsUBOWriteSet.dstArrayElement = 0;
         boidsUBOWriteSet.pBufferInfo = &boidsUBOBufferInfo;
 
-        vkUpdateDescriptorSets(context.device, 1 , &boidsWriteSet, 0, nullptr);
+        vkUpdateDescriptorSets(context.device, 1 , &boidsInWriteSet, 0, nullptr);
+        vkUpdateDescriptorSets(context.device, 1 , &boidsOutWriteSet, 0, nullptr);
         vkUpdateDescriptorSets(context.device, 1 , &boidsUBOWriteSet, 0, nullptr);
         //TODO Move the descriptor sets from this function into context.
     };

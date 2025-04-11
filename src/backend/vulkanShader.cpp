@@ -96,7 +96,7 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
 
     result = vkCreateDescriptorSetLayout(context.device, &boidsSimLayoutInfo, nullptr, &boidsSimLayout);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsInlayout");
-    context.boidsDescriptorsLayouts.push_back(boidsOutlayout);
+    context.boidsDescriptorsLayouts.push_back(boidsSimLayout);
 };
 
 void createBoidsComputePipeline(vulkanContext& context)
