@@ -109,7 +109,7 @@ void BoidsSystem::update()
     vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
             m_context.boidsPipelineLayout, 2, 1, &m_context.boidsDescriptors[m_context.currentFrame + 4], 0, nullptr);
 
-    vkCmdDispatch(m_context.boidsCommandBuffer[m_context.currentFrame], currentSim.boidsCount / 256, 1, 1);
+    vkCmdDispatch(m_context.boidsCommandBuffer[m_context.currentFrame], int(256 / currentSim.boidsCount), 1, 1);
 
     result = vkEndCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame]);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Ending Boids Compute Command Buffer");
