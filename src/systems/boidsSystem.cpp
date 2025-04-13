@@ -72,6 +72,7 @@ void BoidsSystem::start()
 
 void BoidsSystem::update()
 {
+    //vkWaitForFences(m_context.device, 1, &m_context.inFlightFences[m_context.currentFrame], VK_TRUE, UINT64_MAX);
     vkWaitForFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame],
             VK_TRUE, UINT64_MAX);
             
@@ -128,15 +129,10 @@ void BoidsSystem::update()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_context.boidsCommandBuffer[m_context.currentFrame];
 
-    /* 
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = 
-    */
-
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &m_context.boidsFinishedSemaphores[m_context.currentFrame]; 
     
-    result = vkQueueSubmit(m_context.computeQueue, 1, &submitInfo, m_context.boidsInFlightFences[m_context.currentFrame]);
+    // 
+    result = vkQueueSubmit(m_context.graphicQueue, 1, &submitInfo, m_context.boidsInFlightFences[m_context.currentFrame]);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Submit Boids Compute Command Buffer");
 };
