@@ -72,8 +72,7 @@ void BoidsSystem::start()
 
 void BoidsSystem::update()
 {
-
-    vkWaitForFences(m_context.device, 1, &m_context.inFlightFences[m_context.currentFrame],
+    vkWaitForFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame],
             VK_TRUE, UINT64_MAX);
             
     //TODO Just fix this lol, I know im about to write some hot trash here!!!
@@ -85,6 +84,7 @@ void BoidsSystem::update()
 
     updateBoidsUniformBuffer(m_context, currentSim);
 
+    vkResetFences(m_context.device, 1, &m_context.boidsInFlightFences[m_context.currentFrame]);
     vkResetCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame], 0);
 
     /* Start Command Buffer Recording */
@@ -109,7 +109,14 @@ void BoidsSystem::update()
     vkCmdBindDescriptorSets(m_context.boidsCommandBuffer[m_context.currentFrame], VK_PIPELINE_BIND_POINT_COMPUTE,
             m_context.boidsPipelineLayout, 2, 1, &m_context.boidsDescriptors[m_context.currentFrame + 4], 0, nullptr);
 
-    vkCmdDispatch(m_context.boidsCommandBuffer[m_context.currentFrame], int(256 / currentSim.boidsCount), 1, 1);
+
+    auto workgroup_size = currentSim.boidsCount / 256;
+    if (workgroup_size == 0)
+    {
+        workgroup_size = 1;
+    }
+
+    vkCmdDispatch(m_context.boidsCommandBuffer[m_context.currentFrame], workgroup_size, 1, 1);
 
     result = vkEndCommandBuffer(m_context.boidsCommandBuffer[m_context.currentFrame]);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Ending Boids Compute Command Buffer");
@@ -117,10 +124,18 @@ void BoidsSystem::update()
     
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_context.boidsCommandBuffer[m_context.currentFrame];
+
+    /* 
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = 
+    */
+
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &m_context.boidsFinishedSemaphores[m_context.currentFrame]; 
+    submitInfo.pSignalSemaphores = &m_context.boidsFinishedSemaphores[m_context.currentFrame]; 
     
     result = vkQueueSubmit(m_context.computeQueue, 1, &submitInfo, m_context.boidsInFlightFences[m_context.currentFrame]);
     ASSERT_VK_RESULT(result, VK_SUCCESS, "Submit Boids Compute Command Buffer");
