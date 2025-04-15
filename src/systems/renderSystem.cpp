@@ -176,10 +176,10 @@ void RenderSystem::update()
         vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 1, 1,
                             &m_context.descriptorSets.at(boidsSim).at(objectType)[m_context.currentFrame], 0, nullptr);
 
-        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 2, 1,
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 3, 1,
                             &m_context.textureDescriptorSet, 0, nullptr);
 
-        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 3, 1,
+        vkCmdBindDescriptorSets(m_context.commandBuffers[m_context.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_context.pipelineLayouts.at(boidsSim), 2, 1,
                             &m_context.boidsDescriptors[m_context.currentFrame], 0, nullptr);
 
         uint32_t meshID = m_scene->m_MeshComponents.at(boidsSim).ID; // Doesn't seem needed 
@@ -262,7 +262,7 @@ void RenderSystem::update()
         waitSemaphores.push_back(m_context.boidsFinishedSemaphores[m_context.currentFrame]);    
     };
     
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT};
     submitInfo.waitSemaphoreCount = static_cast<int>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages;

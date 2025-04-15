@@ -532,7 +532,7 @@ void createDescriptorSetLayout(vulkanContext& context, Scene* scene)
             storageBufferBinding.binding = 0;
             storageBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             storageBufferBinding.descriptorCount = 1;
-            storageBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+            storageBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
             storageBufferBinding.pImmutableSamplers = nullptr;
 
             VkDescriptorSetLayout storageDescriptorLayout;
@@ -607,17 +607,17 @@ void createGraphicsPipelineLayout(vulkanContext& context, Scene* scene)
                 tempLayout.push_back(layout);
             }
 
+            /* Globals */
+            tempLayout.push_back(context.textureDescriptorSetLayout); 
+
             // Add Storage Buffer to Graphic Layout
             if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
             {
                 //Dont think we need this anymore but check
                 //TODO Come back and check for the In and Out Buffer here too...
-                //tempLayout.push_back(context.boidsDescriptorsLayout_gfx);
+                tempLayout.push_back(context.boidsDescriptorsLayout_gfx);
                 std::cout << "This is a boid shader...\n"; 
             };
-
-             /* Globals */
-            tempLayout.push_back(context.textureDescriptorSetLayout); 
             
             VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
