@@ -26,7 +26,7 @@ layout(location = 0) out vec2 fragTexCoord;
 void main()
 {
     Boid currentBoid = boidsIn[gl_InstanceIndex];
-    mat4 boidTransform = mat4(1.0f);
-    gl_Position = scene.proj * scene.view * object.model *  vec4(inPosition, 1.0);
+    vec4 boidTransform = vec4(currentBoid.pos, 1.0f);
+    gl_Position = scene.proj * scene.view * object.model * (vec4(inPosition, 1.0) * boidTransform);
     fragTexCoord = inTexCoord;
 }

@@ -676,7 +676,7 @@ void createGraphicsPipeline(vulkanContext& context, Scene* scene, Entity ent)
     if (scene->m_BoidsComponents.find(ent) != scene->m_BoidsComponents.end())
     {
         /* Set instancing for BoidsSystem */
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+        //bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
     };
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

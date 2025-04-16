@@ -200,6 +200,7 @@ void RenderSystem::update()
                            0,
                            sizeof(TextureIndexPush),
                            &index);
+        // Draw instanced doesn't seems to be working??
         vkCmdDrawIndexed(m_context.commandBuffers[m_context.currentFrame], indicesCount, boids.boidsCount, firstIndex, 0, 0);
     };
     //TODO MOVE THIS TO A DIFFERENT FILE PLEASE!!!
