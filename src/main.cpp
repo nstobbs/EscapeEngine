@@ -53,7 +53,7 @@ int main()
     CameraComponent Camera;
     Camera.focalLength = 45.0f;
     Camera.direction = glm::vec3(-0.5f, -0.5f, -0.5f);
-    Camera.position = glm::vec3(1.75f, 1.75f, 1.75f);
+    Camera.position = glm::vec3(3.0f, 3.0f, 3.0f);
     SceneObject.setActiveCamera(Camera);
 
     /* Create Application */
