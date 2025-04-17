@@ -30,10 +30,10 @@ void main()
     vec3 boidDir = currentBoid.dir;
     
     vec3 forward = normalize(boidDir);
-    vec3 world_up = vec3(0.0f, 0.0f, 1.0f);
+    vec3 world_up = vec3(0.0f, 1.0f, 0.0f);
 
     vec3 right;
-    right = normalize(cross(world_up, right));
+    right = normalize(cross(world_up, forward));
 
     vec3 up = cross(forward, right);
     mat4 rotation = mat4(1.0f);

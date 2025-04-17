@@ -34,11 +34,11 @@ int main()
     boidsShaders.vertexSourcePath = "../../src/shaders/BoidsVert.spv";
 
     MeshComponent boidsMesh;
-    boidsMesh.filepath = "../../models/viking_room.obj";
+    boidsMesh.filepath = "../../models/PL12.obj";
     objLoader(boidsMesh);
     
     TextureComponent boidsTexture;
-    boidsTexture.texturePath = "../../textures/viking_room.png";
+    boidsTexture.texturePath = "../../textures/PL12d.png";
 
     BoidsComponent boidsSim;
     boidsSim.boidsCount = 10;

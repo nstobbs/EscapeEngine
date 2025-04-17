@@ -31,5 +31,8 @@ layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 void main()
 {
     uint index = gl_GlobalInvocationID.x;
-    boidsOut[index] = boidsIn[index];
+    Boid thisBoid = boidsIn[index];
+    //thisBoid.pos.x = thisBoid.pos.x + 0.001f;
+    thisBoid.pos = thisBoid.pos + (thisBoid.dir * vec3(0.001f));
+    boidsOut[index] = thisBoid;
 }
