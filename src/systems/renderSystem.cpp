@@ -207,6 +207,7 @@ void RenderSystem::update()
     /* TEMP IMGUI RENDER CODE, TO MOVE INTO IT'S OWN SYSTEM LATER */
     bool showDemo = true;
     bool enableDebugMenu = true;
+    bool showBoidsMenu = true;
 
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -241,6 +242,61 @@ void RenderSystem::update()
     ImGui::Text("Pitch: %lf", pitch);
     ImGui::Text("Yaw: %lf", yaw);
     ImGui::Text("Focal Length: %04f", lens);
+
+    ImGui::End();
+
+    /* Boids Control Menu */
+    ImGui::Begin("Boids Control Menu", &showBoidsMenu);
+
+    BoidsComponent& thisSim = m_scene->m_BoidsComponents.at(boidsSim); 
+
+    float UI_separation = thisSim.sim_separation;
+    ImGui::SliderFloat("Separation", &UI_separation, 0.0f, 5.0f);
+    thisSim.sim_separation = UI_separation;
+
+    float UI_alignment = thisSim.sim_alignment;
+    ImGui::SliderFloat("Alignment", &UI_alignment, 0.0f, 5.0f);
+    thisSim.sim_alignment = UI_alignment;
+
+    float UI_cohesion = thisSim.sim_cohesion;
+    ImGui::SliderFloat("Cohesion", &UI_cohesion, 0.0f, 5.0f);
+    thisSim.sim_cohesion = UI_cohesion;
+
+    float UI_protected_range = thisSim.sim_protected_range;
+    ImGui::SliderFloat("Protected Range", &UI_protected_range, 0.0f, 1.0f);
+    thisSim.sim_protected_range = UI_protected_range;
+
+    float UI_visible_range = thisSim.sim_visible_range;
+    ImGui::SliderFloat("Visible Range", &UI_visible_range, 0.0f, 1.0f);
+    thisSim.sim_visible_range = UI_visible_range;
+
+    float UI_turn_factor = thisSim.sim_turn_factor;
+    ImGui::SliderFloat("Turn Factor", &UI_turn_factor, 0.0f, 1.0f);
+    thisSim.sim_turn_factor = UI_turn_factor;
+
+    float UI_max_speed = thisSim.sim_max_speed;
+    ImGui::SliderFloat("Max Speed", &UI_max_speed, 0.0f, 1.0f);
+    thisSim.sim_max_speed = UI_max_speed;
+
+    float UI_min_speed = thisSim.sim_min_speed;
+    ImGui::SliderFloat("Min Speed", &UI_min_speed, 0.0f, 1.0f);
+    thisSim.sim_min_speed = UI_min_speed;
+
+    float UI_update_rate = thisSim.sim_update_rate;
+    ImGui::SliderFloat("Update Rate", &UI_update_rate, 0.0f, 0.1f);
+    thisSim.sim_update_rate = UI_update_rate;
+
+    float UI_height = thisSim.height;
+    ImGui::SliderFloat("Bounding Box Height*", &UI_height, 0.0f, 3.0f);
+    thisSim.height = UI_height;
+
+    float UI_width = thisSim.width;
+    ImGui::SliderFloat("Bounding Box Width*", &UI_width, 0.0f, 3.0f);
+    thisSim.width = UI_width;
+
+    float UI_depth = thisSim.depth;
+    ImGui::SliderFloat("Bounding Box Depth*", &UI_depth, 0.0f, 3.0f);
+    thisSim.depth = UI_depth;
 
     ImGui::End();
 

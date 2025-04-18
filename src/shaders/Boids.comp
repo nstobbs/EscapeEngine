@@ -15,7 +15,7 @@ layout(set = 1, binding = 0) buffer BoidsSSBOOut
     Boid boidsOut[ ];
 };
 
-layout(set = 3, binding = 0) uniform BoidsSim {
+layout(set = 2, binding = 0) uniform BoidsSim {
     float sim_separation;
     float sim_alignment;
     float sim_cohesion;
@@ -23,16 +23,169 @@ layout(set = 3, binding = 0) uniform BoidsSim {
     float width;
     float depth;
 
+    int sim_boidsCount;
     float deltaTime;
+
+    float sim_protected_range;
+    float sim_visible_range;
+    float sim_turn_factor;
+    float sim_max_speed;
+    float sim_min_speed;
+    float sim_update_rate;
 } sim;
 
 layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {
+    // Input Boid
     uint index = gl_GlobalInvocationID.x;
     Boid thisBoid = boidsIn[index];
-    //thisBoid.pos.x = thisBoid.pos.x + 0.001f;
-    thisBoid.pos = thisBoid.pos + (thisBoid.dir * vec3(0.001f));
+
+    // Boids Algorithm
+
+    // Separation 
+    float protected_range = sim.sim_protected_range; 
+    float avoid_factor = sim.sim_separation;
+
+    vec3 close_distance = vec3(0.0f);
+
+    for (int n = 0; n < sim.sim_boidsCount; n++)
+    {
+        if (n != index)
+        {
+            Boid testing = boidsIn[n]; 
+            // Calculate the distance
+            float d;
+            d = sqrt(pow((testing.pos.x - thisBoid.pos.x), 2.0f) +
+                     pow((testing.pos.y - thisBoid.pos.y), 2.0f) +
+                     pow((testing.pos.z - thisBoid.pos.z), 2.0f));
+            if (d < protected_range)
+            {
+                close_distance += thisBoid.pos - testing.pos;
+            };
+
+        };
+    };
+
+    thisBoid.dir += close_distance * avoid_factor;
+
+    // Alignment
+    float matching_factor = sim.sim_alignment;
+    float visible_range = sim.sim_visible_range;
+    int neighboring_boid_count = 0;
+    vec3 velocity_avg = vec3(0.0f);
+
+    for (int n = 0; n < sim.sim_boidsCount; n++)
+    {
+        if(n != index)
+        {   
+            Boid testing = boidsIn[n];
+            float d;
+            d = sqrt(pow((testing.pos.x - thisBoid.pos.x), 2.0f) +
+                        pow((testing.pos.y - thisBoid.pos.y), 2.0f) +
+                        pow((testing.pos.z - thisBoid.pos.z), 2.0f));
+            if (d < visible_range)
+            {
+                velocity_avg += testing.dir;
+                neighboring_boid_count++;
+            };
+        };
+    };
+
+    if (neighboring_boid_count > 0)
+    {
+       velocity_avg = velocity_avg / neighboring_boid_count;
+       thisBoid.dir += (velocity_avg - thisBoid.dir) * matching_factor;
+    };
+
+    // Cohesion
+    float centering_factor = sim.sim_cohesion;
+    neighboring_boid_count = 0; // reset
+    vec3 position_avg = vec3(0.0f);
+
+    for (int n = 0; n < sim.sim_boidsCount; n++)
+    {
+        if (n != index)
+        {
+            Boid testing = boidsIn[n]; 
+            float d;
+            d = sqrt(pow((testing.pos.x - thisBoid.pos.x), 2.0f) +
+                        pow((testing.pos.y - thisBoid.pos.y), 2.0f) +
+                        pow((testing.pos.z - thisBoid.pos.z), 2.0f));
+            if (d < visible_range)
+            {
+                position_avg += testing.pos;
+                neighboring_boid_count++;
+            };
+        };
+    };
+
+    if (neighboring_boid_count > 0)
+    {
+        position_avg = position_avg / neighboring_boid_count;
+    };
+
+    thisBoid.dir += (position_avg - thisBoid.pos) * centering_factor;
+
+
+    // Border Control
+    float turn_factor = sim.sim_turn_factor;
+
+    // x axis
+    if (thisBoid.pos.x > sim.width)
+    {
+        thisBoid.dir.x = thisBoid.dir.x - turn_factor; 
+    }
+
+    if (thisBoid.pos.x < -sim.width)
+    {
+        thisBoid.dir.x = thisBoid.dir.x + turn_factor; 
+    }
+
+    // y axis
+    if (thisBoid.pos.y > sim.height)
+    {
+        thisBoid.dir.y = thisBoid.dir.y - turn_factor; 
+    }
+
+    if (thisBoid.pos.y < -sim.height)
+    {
+        thisBoid.dir.y = thisBoid.dir.y + turn_factor; 
+    }
+
+    // z axis
+    if (thisBoid.pos.z > (sim.depth + 1.0f))
+    {
+        thisBoid.dir.z = thisBoid.dir.z - turn_factor; 
+    }
+
+    if (thisBoid.pos.z < 0.0f)
+    {
+        thisBoid.dir.z = thisBoid.dir.z + turn_factor; 
+    }
+
+    // Speed Limit
+    float maxSpeed = sim.sim_max_speed;
+    float minSpeed = sim.sim_min_speed;
+
+    float speed = sqrt(pow(thisBoid.dir.x, 2.0f) + 
+                       pow(thisBoid.dir.y, 2.0f) +
+                       pow(thisBoid.dir.z, 2.0f));
+    if (speed > maxSpeed)
+    {
+        thisBoid.dir = (thisBoid.dir / speed) * maxSpeed;
+    }
+    
+    if (speed < minSpeed)
+    {
+        thisBoid.dir = (thisBoid.dir / speed) * minSpeed;
+    }
+
+    // Update Position
+    float rate = sim.sim_update_rate;
+    thisBoid.pos += (thisBoid.dir * rate);
+
+    // Output Boid
     boidsOut[index] = thisBoid;
 }

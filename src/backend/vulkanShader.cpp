@@ -75,7 +75,7 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
     boidsOutlayoutInfo.pBindings = &boidsOutBinding;
 
     result = vkCreateDescriptorSetLayout(context.device, &boidsOutlayoutInfo, nullptr, &boidsOutlayout);
-    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsInlayout");
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsOutlayout");
     context.boidsDescriptorsLayouts.push_back(boidsOutlayout);
 
     // Boids Sim Parameters Binding
@@ -95,7 +95,7 @@ void createBoidsDescriptorSetLayout(vulkanContext& context)
     boidsSimLayoutInfo.pBindings = &simBinding;
 
     result = vkCreateDescriptorSetLayout(context.device, &boidsSimLayoutInfo, nullptr, &boidsSimLayout);
-    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsInlayout");
+    ASSERT_VK_RESULT(result, VK_SUCCESS, "Create Boids Descriptor boidsSimlayout");
     context.boidsDescriptorsLayouts.push_back(boidsSimLayout);
 };
 

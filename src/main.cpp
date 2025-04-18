@@ -34,14 +34,14 @@ int main()
     boidsShaders.vertexSourcePath = "../../src/shaders/BoidsVert.spv";
 
     MeshComponent boidsMesh;
-    boidsMesh.filepath = "../../models/PL12.obj";
+    boidsMesh.filepath = "../../models/sphere.obj";
     objLoader(boidsMesh);
     
     TextureComponent boidsTexture;
-    boidsTexture.texturePath = "../../textures/PL12d.png";
+    boidsTexture.texturePath = "../../textures/von.png";
 
     BoidsComponent boidsSim;
-    boidsSim.boidsCount = 10;
+    boidsSim.boidsCount = 50;
 
     SceneObject.setEntityTransformComponent(boids, boidsTransform);
     SceneObject.setEntityShaderComponent(boids, boidsShaders);
@@ -53,7 +53,7 @@ int main()
     CameraComponent Camera;
     Camera.focalLength = 45.0f;
     Camera.direction = glm::vec3(-0.5f, -0.5f, -0.5f);
-    Camera.position = glm::vec3(3.0f, 3.0f, 3.0f);
+    Camera.position = glm::vec3(4.0f, 3.5f, 4.5f);
     SceneObject.setActiveCamera(Camera);
 
     /* Create Application */

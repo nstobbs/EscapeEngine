@@ -270,10 +270,19 @@ void updateBoidsUniformBuffer(vulkanContext& context, BoidsComponent& data)
     sim.sim_separation = data.sim_separation;
     sim.sim_cohesion = data.sim_cohesion;
     sim.sim_alignment = data.sim_alignment;
+
+    sim.sim_protected_range = data.sim_protected_range;
+    sim.sim_visible_range = data.sim_visible_range;
+    sim.sim_turn_factor = data.sim_turn_factor;
+    sim.sim_max_speed = data.sim_max_speed;
+    sim.sim_min_speed = data.sim_min_speed;
+    sim.sim_update_rate = data.sim_update_rate;
     
     sim.height = data.height;
     sim.width = data.width;
     sim.depth = data.depth;
+    
+    sim.sim_boidsCount = data.boidsCount;
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();

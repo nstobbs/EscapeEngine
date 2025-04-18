@@ -14,14 +14,18 @@ Entity EntityFactor::createGrid()
     TextureComponent texture;
 
     std::vector<Vertex> vertices(4);
-    vertices[0].pos = glm::vec3(-2.0f, 2.0f, 0.0f);
-    vertices[0].texCoord = glm::vec2(0.0f, 1.0f);
-    vertices[1].pos = glm::vec3(2.0f, 2.0f, 0.0f);
-    vertices[1].texCoord = glm::vec2(1.0f, 1.0f);
-    vertices[2].pos = glm::vec3(-2.0f, -2.0f, 0.0f);
+
+    float gridScale = 100.0f;
+    float uvScale = 20.0f;
+
+    vertices[0].pos = glm::vec3(-gridScale, gridScale, 0.0f);
+    vertices[0].texCoord = glm::vec2(0.0f, uvScale);
+    vertices[1].pos = glm::vec3(gridScale, gridScale, 0.0f);
+    vertices[1].texCoord = glm::vec2(uvScale, uvScale);
+    vertices[2].pos = glm::vec3(-gridScale, -gridScale, 0.0f);
     vertices[2].texCoord = glm::vec2(0.0f, 0.0f);
-    vertices[3].pos = glm::vec3(2.0f, -2.0f, 0.0f);
-    vertices[3].texCoord = glm::vec2(1.0f, 0.0f);
+    vertices[3].pos = glm::vec3(gridScale, -gridScale, 0.0f);
+    vertices[3].texCoord = glm::vec2(uvScale, 0.0f);
 
     mesh.vertices = vertices;
     mesh.verticesCount = 4;

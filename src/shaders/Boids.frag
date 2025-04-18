@@ -10,7 +10,7 @@ layout(set = 1, binding = 0) uniform ObjectUniformBuffer {
 } object;
 
 layout(set = 3, binding = 0) uniform sampler _sampler;
-layout(set = 3, binding = 1) uniform texture2D textures[2];
+layout(set = 3, binding = 1) uniform texture2D textures[2048];
 
 layout(push_constant) uniform TextureIndexPush {
     int textureIndex;

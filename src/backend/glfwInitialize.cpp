@@ -1,7 +1,7 @@
 #include "glfwInitialize.hpp"
 
 const float ASPECT_RATIO = 16.0f/14.0f;
-const int HEIGHT = 640;
+const int HEIGHT = 1080;
 const int WIDTH = HEIGHT * ASPECT_RATIO;
 
 GLFWwindow* initializeWindow(vulkanContext& context)

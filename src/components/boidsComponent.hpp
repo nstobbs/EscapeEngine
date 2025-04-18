@@ -19,7 +19,14 @@ struct BoidsComponent
 
     float sim_separation = 0.5f;
     float sim_alignment = 0.5f;
-    float sim_cohesion = 0.5f;
+    float sim_cohesion = 0.2f;
+
+    float sim_protected_range = 0.5f;
+    float sim_visible_range = 0.5f;
+    float sim_turn_factor = 1.0f;
+    float sim_max_speed = 0.2f;
+    float sim_min_speed = 0.1f;
+    float sim_update_rate = 0.005f;
 
     // Bounding Box 
     float height = 1.0f;
@@ -43,7 +50,16 @@ struct BoidsSim
     float width;
     float depth;
 
+    int sim_boidsCount;
+
     float deltaTime;
+
+    float sim_protected_range;
+    float sim_visible_range;
+    float sim_turn_factor;
+    float sim_max_speed;
+    float sim_min_speed;
+    float sim_update_rate;
 };
 
 #endif
