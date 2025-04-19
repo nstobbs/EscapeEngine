@@ -34,14 +34,14 @@ int main()
     boidsShaders.vertexSourcePath = "../../src/shaders/BoidsVert.spv";
 
     MeshComponent boidsMesh;
-    boidsMesh.filepath = "../../models/sphere.obj";
+    boidsMesh.filepath = "../../models/paperplane.obj";
     objLoader(boidsMesh);
     
     TextureComponent boidsTexture;
-    boidsTexture.texturePath = "../../textures/von.png";
+    boidsTexture.texturePath = "../../textures/paper.png";
 
     BoidsComponent boidsSim;
-    boidsSim.boidsCount = 50;
+    boidsSim.boidsCount = 100;
 
     SceneObject.setEntityTransformComponent(boids, boidsTransform);
     SceneObject.setEntityShaderComponent(boids, boidsShaders);
