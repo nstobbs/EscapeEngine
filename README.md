@@ -11,11 +11,11 @@ WIP
 
 ### TODO List
 
-- [ ] Finish BoidsSystem Cycle.
-- [ ] Create Boids Compute Shader.
+- [X] Finish BoidsSystem Cycle.
+- [X] Create Boids Compute Shader.
 - [ ] Create an GPU abstraction layer.
 - [ ] Basic Refactor of esc system.
 - [ ] Add Builds Steps for linux.
 - [ ] Add pybind
-- [ ] Improve Grid Drawing
+- [X] Improve Grid Drawing
 - [ ] Add Mltisampling support
