@@ -1142,10 +1142,15 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         boidsUBOBufferInfo.offset = 0;
         boidsUBOBufferInfo.range = sizeof(BoidsSim);
 
-        VkDescriptorBufferInfo boidsBufferInfo{};
-        boidsBufferInfo.buffer = context.boidsBuffers[i];
-        boidsBufferInfo.offset = 0;
-        boidsBufferInfo.range = static_cast<uint32_t>(boidsDetails.boidsCount * sizeof(Boid));
+        VkDescriptorBufferInfo boidsInBufferInfo{};
+        boidsInBufferInfo.buffer = context.boidsBuffers[(i - 1) % MAX_FRAMES_IN_FLIGHT]; 
+        boidsInBufferInfo.offset = 0;
+        boidsInBufferInfo.range = static_cast<uint32_t>(boidsDetails.boidsCount * sizeof(Boid));
+
+        VkDescriptorBufferInfo boidsOutBufferInfo{};
+        boidsOutBufferInfo.buffer = context.boidsBuffers[i];
+        boidsOutBufferInfo.offset = 0;
+        boidsOutBufferInfo.range = static_cast<uint32_t>(boidsDetails.boidsCount * sizeof(Boid));
         
         //TODO think I need to have an In and Out Descriptor Set here
         VkWriteDescriptorSet boidsInWriteSet{};
@@ -1155,7 +1160,7 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         boidsInWriteSet.dstBinding = 0;
         boidsInWriteSet.dstSet = descriptorSets[i]; // 0 and 1
         boidsInWriteSet.dstArrayElement = 0;
-        boidsInWriteSet.pBufferInfo = &boidsBufferInfo;
+        boidsInWriteSet.pBufferInfo = &boidsInBufferInfo;
         
         VkWriteDescriptorSet boidsOutWriteSet{};
         boidsOutWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1164,7 +1169,7 @@ void createBoidsDescriptorSets(vulkanContext& context, Scene* scene)
         boidsOutWriteSet.dstBinding = 0;
         boidsOutWriteSet.dstSet = descriptorSets[i+2]; // 2 and 3
         boidsOutWriteSet.dstArrayElement = 0;
-        boidsOutWriteSet.pBufferInfo = &boidsBufferInfo;
+        boidsOutWriteSet.pBufferInfo = &boidsOutBufferInfo;
 
         VkWriteDescriptorSet boidsUBOWriteSet{};
         boidsUBOWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

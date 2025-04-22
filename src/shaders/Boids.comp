@@ -155,7 +155,7 @@ void main()
     }
 
     // z axis
-    if (thisBoid.pos.z > (sim.depth + 1.0f))
+    if (thisBoid.pos.z > (sim.depth + 1.5f))
     {
         thisBoid.dir.z = thisBoid.dir.z - turn_factor; 
     }

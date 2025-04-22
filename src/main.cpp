@@ -34,14 +34,14 @@ int main()
     boidsShaders.vertexSourcePath = "../../src/shaders/BoidsVert.spv";
 
     MeshComponent boidsMesh;
-    boidsMesh.filepath = "../../models/paperplane.obj";
+    boidsMesh.filepath = "../../models/triangle.obj";
     objLoader(boidsMesh);
     
     TextureComponent boidsTexture;
-    boidsTexture.texturePath = "../../textures/paper.png";
+    boidsTexture.texturePath = "../../textures/von.png";
 
     BoidsComponent boidsSim;
-    boidsSim.boidsCount = 100;
+    boidsSim.boidsCount = 1048;
 
     SceneObject.setEntityTransformComponent(boids, boidsTransform);
     SceneObject.setEntityShaderComponent(boids, boidsShaders);
@@ -53,7 +53,7 @@ int main()
     CameraComponent Camera;
     Camera.focalLength = 45.0f;
     Camera.direction = glm::vec3(-0.5f, -0.5f, -0.5f);
-    Camera.position = glm::vec3(4.0f, 3.5f, 4.5f);
+    Camera.position = glm::vec3(6.5f, 7.0f, 7.0f);
     SceneObject.setActiveCamera(Camera);
 
     /* Create Application */

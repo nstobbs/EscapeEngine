@@ -14,8 +14,8 @@ class CameraSystem
     private:
         Scene* m_scene;
         GLFWwindow* m_window;
-        float cameraSpeed = 0.05f;
-        float mouseSen = 0.1f;
+        float cameraSpeed = 0.5f;
+        float mouseSen = 0.5f;
         float lensSpeed = 0.01f; 
         double lastX, lastY;
 

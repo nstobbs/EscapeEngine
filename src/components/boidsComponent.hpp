@@ -17,21 +17,21 @@ struct BoidsComponent
     // Sim Parameter
     uint16_t boidsCount;
 
-    float sim_separation = 0.01f;
-    float sim_alignment = 0.15f;
-    float sim_cohesion = 0.015f;
+    float sim_separation = 0.025f;
+    float sim_alignment = 0.5f;
+    float sim_cohesion = 0.05f;
 
-    float sim_protected_range = 0.5f;
-    float sim_visible_range = 0.65f;
+    float sim_protected_range = 0.4f;
+    float sim_visible_range = 0.4f;
     float sim_turn_factor = 0.005f;
     float sim_max_speed = 0.3f;
     float sim_min_speed = 0.1f;
     float sim_update_rate = 0.025f;
 
     // Bounding Box 
-    float height = 1.0f;
-    float width = 1.5f;
-    float depth = 1.0f;
+    float height = 3.0f;
+    float width = 3.0f;
+    float depth = 3.0f;
 };
 
 struct Boid
